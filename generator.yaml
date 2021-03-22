@@ -1,0 +1,13 @@
+operations:
+  PutScalingPolicy:
+    operation_type: Create
+    resource_name: ScalingPolicy
+  PutScheduledAction:
+    operation_type: Create
+    resource_name: ScheduledAction
+  RegisterScalableTarget:
+    operation_type: Create
+    resource_name: ScalableTarget
+  DeregisterScalableTarget:
+    operation_type: Delete
+    resource_name: ScalableTarget
