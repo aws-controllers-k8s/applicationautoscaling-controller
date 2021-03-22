@@ -54,7 +54,7 @@ func (rm *resourceManager) sdkFind(
 	resp, respErr := rm.sdkapi.DescribeScalableTargetsWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalableTargets", respErr)
 	if respErr != nil {
-		if awsErr, ok := ackerr.AWSError(respErr); ok && awsErr.Code() == "ValidationException" && strings.HasPrefix(awsErr.Message(), "Scalable dimension cannot be provided without resource IDs") {
+		if awsErr, ok := ackerr.AWSError(respErr); ok && awsErr.Code() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
 		return nil, respErr
