@@ -1,0 +1,56 @@
+---
+annotations:
+  capabilityLevel: basic install
+  shortDescription: AWS Application Auto Scaling controller is a service controller for managing Application Auto Scaling resources
+    in Kubernetes
+displayName: AWS Controllers for Kubernetes - Amazon Application Auto Scaling
+description: |-
+  Manage Amazon Application Auto Scaling resources in AWS from within your Kubernetes cluster.
+
+  **About Amazon Application Auto Scaling**
+
+  Application Auto Scaling is a web service for developers and system administrators who need a solution for automatically scaling their scalable resources for individual AWS services beyond Amazon EC2. Application Auto Scaling allows you to configure automatic scaling for the following resources:
+
+  - AppStream 2.0 fleets
+
+  - Aurora replicas
+
+  - Amazon Comprehend document classification and entity recognizer endpoints
+
+  - DynamoDB tables and global secondary indexes
+
+  - Amazon Elastic Container Service (ECS) services
+
+  - Amazon EMR clusters
+
+  - Amazon Keyspaces (for Apache Cassandra) tables
+
+  - Lambda function provisioned concurrency
+
+  - Amazon Managed Streaming for Apache Kafka (MSK) broker storage
+
+  - SageMaker endpoint variants
+
+  - Spot Fleet requests
+  
+  - Custom resources provided by your own applications or services. For more information, see the [GitHub repository](https://github.com/aws/aws-auto-scaling-custom-resource)
+
+
+  **About the AWS Controllers for Kubernetes**
+
+
+  This controller is a component of the [AWS Controller for Kubernetes](https://github.com/aws/aws-controllers-k8s)
+  project. This project is currently in **developer preview**. 
+samples:
+- kind: ScalableTarget
+  spec: '{}'
+- kind: ScalingPolicy
+  spec: '{}'
+- kind: ScheduledAction
+  spec: '{}'
+maintainers:
+- name: "Your Team Name"
+  email: "your-team@example.com"
+links:
+- name: Amazon Application Auto Scaling User Guide
+  url: "https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html"
