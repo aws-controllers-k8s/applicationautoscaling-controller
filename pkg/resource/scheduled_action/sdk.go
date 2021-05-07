@@ -68,12 +68,18 @@ func (rm *resourceManager) sdkFind(
 	for _, elem := range resp.ScheduledActions {
 		if elem.EndTime != nil {
 			ko.Spec.EndTime = &metav1.Time{*elem.EndTime}
+		} else {
+			ko.Spec.EndTime = nil
 		}
 		if elem.ResourceId != nil {
 			ko.Spec.ResourceID = elem.ResourceId
+		} else {
+			ko.Spec.ResourceID = nil
 		}
 		if elem.ScalableDimension != nil {
 			ko.Spec.ScalableDimension = elem.ScalableDimension
+		} else {
+			ko.Spec.ScalableDimension = nil
 		}
 		if elem.ScalableTargetAction != nil {
 			f4 := &svcapitypes.ScalableTargetAction{}
@@ -84,9 +90,13 @@ func (rm *resourceManager) sdkFind(
 				f4.MinCapacity = elem.ScalableTargetAction.MinCapacity
 			}
 			ko.Spec.ScalableTargetAction = f4
+		} else {
+			ko.Spec.ScalableTargetAction = nil
 		}
 		if elem.Schedule != nil {
 			ko.Spec.Schedule = elem.Schedule
+		} else {
+			ko.Spec.Schedule = nil
 		}
 		if elem.ScheduledActionARN != nil {
 			if ko.Status.ACKResourceMetadata == nil {
@@ -97,15 +107,23 @@ func (rm *resourceManager) sdkFind(
 		}
 		if elem.ScheduledActionName != nil {
 			ko.Spec.ScheduledActionName = elem.ScheduledActionName
+		} else {
+			ko.Spec.ScheduledActionName = nil
 		}
 		if elem.ServiceNamespace != nil {
 			ko.Spec.ServiceNamespace = elem.ServiceNamespace
+		} else {
+			ko.Spec.ServiceNamespace = nil
 		}
 		if elem.StartTime != nil {
 			ko.Spec.StartTime = &metav1.Time{*elem.StartTime}
+		} else {
+			ko.Spec.StartTime = nil
 		}
 		if elem.Timezone != nil {
 			ko.Spec.Timezone = elem.Timezone
+		} else {
+			ko.Spec.Timezone = nil
 		}
 		found = true
 		break
@@ -286,10 +304,13 @@ func (rm *resourceManager) updateConditions(
 
 	// Terminal condition
 	var terminalCondition *ackv1alpha1.Condition = nil
+	var recoverableCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
-			break
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeRecoverable {
+			recoverableCondition = condition
 		}
 	}
 
@@ -304,11 +325,34 @@ func (rm *resourceManager) updateConditions(
 		awsErr, _ := ackerr.AWSError(err)
 		errorMessage := awsErr.Message()
 		terminalCondition.Message = &errorMessage
-	} else if terminalCondition != nil {
-		terminalCondition.Status = corev1.ConditionFalse
-		terminalCondition.Message = nil
+	} else {
+		// Clear the terminal condition if no longer present
+		if terminalCondition != nil {
+			terminalCondition.Status = corev1.ConditionFalse
+			terminalCondition.Message = nil
+		}
+		// Handling Recoverable Conditions
+		if err != nil {
+			if recoverableCondition == nil {
+				// Add a new Condition containing a non-terminal error
+				recoverableCondition = &ackv1alpha1.Condition{
+					Type: ackv1alpha1.ConditionTypeRecoverable,
+				}
+				ko.Status.Conditions = append(ko.Status.Conditions, recoverableCondition)
+			}
+			recoverableCondition.Status = corev1.ConditionTrue
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage := err.Error()
+			if awsErr != nil {
+				errorMessage = awsErr.Message()
+			}
+			recoverableCondition.Message = &errorMessage
+		} else if recoverableCondition != nil {
+			recoverableCondition.Status = corev1.ConditionFalse
+			recoverableCondition.Message = nil
+		}
 	}
-	if terminalCondition != nil {
+	if terminalCondition != nil || recoverableCondition != nil {
 		return &resource{ko}, true // updated
 	}
 	return nil, false // not updated

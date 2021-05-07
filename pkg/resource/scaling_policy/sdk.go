@@ -79,24 +79,38 @@ func (rm *resourceManager) sdkFind(
 				f0 = append(f0, f0elem)
 			}
 			ko.Status.Alarms = f0
+		} else {
+			ko.Status.Alarms = nil
 		}
 		if elem.PolicyARN != nil {
 			ko.Status.PolicyARN = elem.PolicyARN
+		} else {
+			ko.Status.PolicyARN = nil
 		}
 		if elem.PolicyName != nil {
 			ko.Spec.PolicyName = elem.PolicyName
+		} else {
+			ko.Spec.PolicyName = nil
 		}
 		if elem.PolicyType != nil {
 			ko.Spec.PolicyType = elem.PolicyType
+		} else {
+			ko.Spec.PolicyType = nil
 		}
 		if elem.ResourceId != nil {
 			ko.Spec.ResourceID = elem.ResourceId
+		} else {
+			ko.Spec.ResourceID = nil
 		}
 		if elem.ScalableDimension != nil {
 			ko.Spec.ScalableDimension = elem.ScalableDimension
+		} else {
+			ko.Spec.ScalableDimension = nil
 		}
 		if elem.ServiceNamespace != nil {
 			ko.Spec.ServiceNamespace = elem.ServiceNamespace
+		} else {
+			ko.Spec.ServiceNamespace = nil
 		}
 		if elem.StepScalingPolicyConfiguration != nil {
 			f8 := &svcapitypes.StepScalingPolicyConfiguration{}
@@ -130,6 +144,8 @@ func (rm *resourceManager) sdkFind(
 				f8.StepAdjustments = f8f4
 			}
 			ko.Spec.StepScalingPolicyConfiguration = f8
+		} else {
+			ko.Spec.StepScalingPolicyConfiguration = nil
 		}
 		if elem.TargetTrackingScalingPolicyConfiguration != nil {
 			f9 := &svcapitypes.TargetTrackingScalingPolicyConfiguration{}
@@ -186,6 +202,8 @@ func (rm *resourceManager) sdkFind(
 				f9.TargetValue = elem.TargetTrackingScalingPolicyConfiguration.TargetValue
 			}
 			ko.Spec.TargetTrackingScalingPolicyConfiguration = f9
+		} else {
+			ko.Spec.TargetTrackingScalingPolicyConfiguration = nil
 		}
 		found = true
 		break
@@ -252,9 +270,13 @@ func (rm *resourceManager) sdkCreate(
 			f0 = append(f0, f0elem)
 		}
 		ko.Status.Alarms = f0
+	} else {
+		ko.Status.Alarms = nil
 	}
 	if resp.PolicyARN != nil {
 		ko.Status.PolicyARN = resp.PolicyARN
+	} else {
+		ko.Status.PolicyARN = nil
 	}
 
 	rm.setStatusDefaults(ko)
@@ -454,10 +476,13 @@ func (rm *resourceManager) updateConditions(
 
 	// Terminal condition
 	var terminalCondition *ackv1alpha1.Condition = nil
+	var recoverableCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
-			break
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeRecoverable {
+			recoverableCondition = condition
 		}
 	}
 
@@ -472,11 +497,34 @@ func (rm *resourceManager) updateConditions(
 		awsErr, _ := ackerr.AWSError(err)
 		errorMessage := awsErr.Message()
 		terminalCondition.Message = &errorMessage
-	} else if terminalCondition != nil {
-		terminalCondition.Status = corev1.ConditionFalse
-		terminalCondition.Message = nil
+	} else {
+		// Clear the terminal condition if no longer present
+		if terminalCondition != nil {
+			terminalCondition.Status = corev1.ConditionFalse
+			terminalCondition.Message = nil
+		}
+		// Handling Recoverable Conditions
+		if err != nil {
+			if recoverableCondition == nil {
+				// Add a new Condition containing a non-terminal error
+				recoverableCondition = &ackv1alpha1.Condition{
+					Type: ackv1alpha1.ConditionTypeRecoverable,
+				}
+				ko.Status.Conditions = append(ko.Status.Conditions, recoverableCondition)
+			}
+			recoverableCondition.Status = corev1.ConditionTrue
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage := err.Error()
+			if awsErr != nil {
+				errorMessage = awsErr.Message()
+			}
+			recoverableCondition.Message = &errorMessage
+		} else if recoverableCondition != nil {
+			recoverableCondition.Status = corev1.ConditionFalse
+			recoverableCondition.Message = nil
+		}
 	}
-	if terminalCondition != nil {
+	if terminalCondition != nil || recoverableCondition != nil {
 		return &resource{ko}, true // updated
 	}
 	return nil, false // not updated
