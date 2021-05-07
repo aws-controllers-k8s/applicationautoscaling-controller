@@ -50,6 +50,7 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+	rm.customDescribeScalableTarget(ctx, r, input)
 
 	resp, respErr := rm.sdkapi.DescribeScalableTargetsWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalableTargets", respErr)
@@ -68,21 +69,33 @@ func (rm *resourceManager) sdkFind(
 	for _, elem := range resp.ScalableTargets {
 		if elem.MaxCapacity != nil {
 			ko.Spec.MaxCapacity = elem.MaxCapacity
+		} else {
+			ko.Spec.MaxCapacity = nil
 		}
 		if elem.MinCapacity != nil {
 			ko.Spec.MinCapacity = elem.MinCapacity
+		} else {
+			ko.Spec.MinCapacity = nil
 		}
 		if elem.ResourceId != nil {
 			ko.Spec.ResourceID = elem.ResourceId
+		} else {
+			ko.Spec.ResourceID = nil
 		}
 		if elem.RoleARN != nil {
 			ko.Spec.RoleARN = elem.RoleARN
+		} else {
+			ko.Spec.RoleARN = nil
 		}
 		if elem.ScalableDimension != nil {
 			ko.Spec.ScalableDimension = elem.ScalableDimension
+		} else {
+			ko.Spec.ScalableDimension = nil
 		}
 		if elem.ServiceNamespace != nil {
 			ko.Spec.ServiceNamespace = elem.ServiceNamespace
+		} else {
+			ko.Spec.ServiceNamespace = nil
 		}
 		if elem.SuspendedState != nil {
 			f7 := &svcapitypes.SuspendedState{}
@@ -96,6 +109,8 @@ func (rm *resourceManager) sdkFind(
 				f7.ScheduledScalingSuspended = elem.SuspendedState.ScheduledScalingSuspended
 			}
 			ko.Spec.SuspendedState = f7
+		} else {
+			ko.Spec.SuspendedState = nil
 		}
 		found = true
 		break
@@ -267,10 +282,13 @@ func (rm *resourceManager) updateConditions(
 
 	// Terminal condition
 	var terminalCondition *ackv1alpha1.Condition = nil
+	var recoverableCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
-			break
+		}
+		if condition.Type == ackv1alpha1.ConditionTypeRecoverable {
+			recoverableCondition = condition
 		}
 	}
 
@@ -285,11 +303,34 @@ func (rm *resourceManager) updateConditions(
 		awsErr, _ := ackerr.AWSError(err)
 		errorMessage := awsErr.Message()
 		terminalCondition.Message = &errorMessage
-	} else if terminalCondition != nil {
-		terminalCondition.Status = corev1.ConditionFalse
-		terminalCondition.Message = nil
+	} else {
+		// Clear the terminal condition if no longer present
+		if terminalCondition != nil {
+			terminalCondition.Status = corev1.ConditionFalse
+			terminalCondition.Message = nil
+		}
+		// Handling Recoverable Conditions
+		if err != nil {
+			if recoverableCondition == nil {
+				// Add a new Condition containing a non-terminal error
+				recoverableCondition = &ackv1alpha1.Condition{
+					Type: ackv1alpha1.ConditionTypeRecoverable,
+				}
+				ko.Status.Conditions = append(ko.Status.Conditions, recoverableCondition)
+			}
+			recoverableCondition.Status = corev1.ConditionTrue
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage := err.Error()
+			if awsErr != nil {
+				errorMessage = awsErr.Message()
+			}
+			recoverableCondition.Message = &errorMessage
+		} else if recoverableCondition != nil {
+			recoverableCondition.Status = corev1.ConditionFalse
+			recoverableCondition.Message = nil
+		}
 	}
-	if terminalCondition != nil {
+	if terminalCondition != nil || recoverableCondition != nil {
 		return &resource{ko}, true // updated
 	}
 	return nil, false // not updated

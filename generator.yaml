@@ -11,3 +11,12 @@ operations:
   DeregisterScalableTarget:
     operation_type: Delete
     resource_name: ScalableTarget
+  #DescribeScalableTarget:
+  #  set_output_custom_method_name: CustomDescribeScalableTargetSetOutput
+resources:
+  ScalableTarget:
+    hooks:
+        sdk_read_one_post_build_request:
+          code: rm.customDescribeScalableTarget
+        sdk_read_many_post_build_request:
+          code: rm.customDescribeScalableTarget

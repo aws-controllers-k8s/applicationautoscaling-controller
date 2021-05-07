@@ -19,11 +19,15 @@ from dataclasses import dataclass
 from acktest.resources import read_bootstrap_config
 from e2e import bootstrap_directory
 
+SAGEMAKER_SOURCE_DATA_BUCKET = "source-data-bucket-718865417152-us-west-2"
 
 @dataclass
 class TestBootstrapResources:
+    DataBucketName: str
+    ExecutionRoleARN: str
     ScalableDynamoTableName: str # To be used for testing RegisterScalableTarget
     RegisteredDynamoTableName: str # Already registered, for testing scaling policies
+    
 
 _bootstrap_resources = None
 
