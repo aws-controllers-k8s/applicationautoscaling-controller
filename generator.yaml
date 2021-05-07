@@ -15,4 +15,4 @@ resources:
   ScalableTarget:
     hooks:
         sdk_read_many_post_build_request:
-          code: rm.customDescribeScalableTarget
+          code: rm.customDescribeScalableTarget(ctx, r, input)
