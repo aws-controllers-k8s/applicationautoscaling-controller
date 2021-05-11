@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. A copy of the
 # License is located at
 #
-#	 http://aws.amazon.com/apache2.0/
+# 	 http://aws.amazon.com/apache2.0/
 #
 # or in the "license" file accompanying this file. This file is distributed
 # on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
@@ -26,6 +26,7 @@ from e2e.bootstrap_resources import TestBootstrapResources
 # Regex to match the role name from a role ARN
 IAM_ROLE_ARN_REGEX = r"^arn:aws:iam::\d{12}:(?:root|user|role\/([A-Za-z0-9-]+))$"
 
+
 def delete_dynamodb_table(table_name: str):
     region = get_region()
     dynamodb = boto3.client("dynamodb", region_name=region)
@@ -33,6 +34,7 @@ def delete_dynamodb_table(table_name: str):
     dynamodb.delete_table(TableName=table_name)
 
     logging.info(f"Deleted DynamoDB table {table_name}")
+
 
 def delete_execution_role(role_arn: str):
     region = get_region()
@@ -67,36 +69,42 @@ def delete_data_bucket(bucket_name: str):
 
     logging.info(f"Deleted data bucket {bucket_name}")
 
+
 def service_cleanup(config: dict):
     logging.getLogger().setLevel(logging.INFO)
 
-    resources = TestBootstrapResources(
-        **config
-    )
+    resources = TestBootstrapResources(**config)
 
     try:
-        delete_data_bucket(resources.DataBucketName)
-    except:
-        logging.exception(f"Unable to delete data bucket {resources.DataBucketName}")
-
-    try:
-        delete_execution_role(resources.ExecutionRoleARN)
+        delete_data_bucket(resources.SageMakerDataBucketName)
     except:
         logging.exception(
-            f"Unable to delete execution role {resources.ExecutionRoleARN}"
+            f"Unable to delete data bucket {resources.SageMakerDataBucketName}"
+        )
+
+    try:
+        delete_execution_role(resources.SageMakerExecutionRoleARN)
+    except:
+        logging.exception(
+            f"Unable to delete execution role {resources.SageMakerExecutionRoleARN}"
         )
 
     try:
         delete_dynamodb_table(resources.ScalableDynamoTableName)
     except:
-        logging.exception(f"Unable to delete DynamoDB table {resources.ScalableDynamoTableName}")
+        logging.exception(
+            f"Unable to delete DynamoDB table {resources.ScalableDynamoTableName}"
+        )
 
     try:
         delete_dynamodb_table(resources.RegisteredDynamoTableName)
     except:
-        logging.exception(f"Unable to delete DynamoDB table {resources.RegisteredDynamoTableName}")
+        logging.exception(
+            f"Unable to delete DynamoDB table {resources.RegisteredDynamoTableName}"
+        )
         pass
 
-if __name__ == "__main__":   
+
+if __name__ == "__main__":
     bootstrap_config = resources.read_bootstrap_config(bootstrap_directory)
-    service_cleanup(bootstrap_config) 
+    service_cleanup(bootstrap_config)

@@ -31,22 +31,4 @@ func (rm *resourceManager) customDescribeScalableTarget(
 		resourceIDList = append(resourceIDList, latestSpec.ResourceID)
 		input.SetResourceIds(resourceIDList)
 	}
-
-	// resp, respErr := rm.sdkapi.DescribeScalableTargetsWithContext(ctx, input)
-
-	// rm.metrics.RecordAPICall("READ_MANY", "DescribeScalableTargets", respErr)
-	// if respErr != nil {
-	// 	rm.log.V(1).Info("Error during DescribeScalableTargets", "error", respErr)
-	// 	return nil, respErr
-	// }
-	// if resp.ScalableTargets == nil {
-	// 	return nil, nil
-	// }
-
-	// for _, cc := range resp.ScalableTargets {
-	// 	if cc == nil {
-	// 		continue
-	// 	}
-	// 	return cc, nil
-	// }
 }

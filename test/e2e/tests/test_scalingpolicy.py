@@ -32,10 +32,13 @@ RESOURCE_PLURAL = "scalingpolicies"
 def applicationautoscaling_client():
     return boto3.client("application-autoscaling")
 
+
 @service_marker
 @pytest.mark.canary
 class TestScalingPolicy:
-    def _generate_dynamodb_policy(self, bootstrap_resources: TestBootstrapResources) -> Tuple[k8s.CustomResourceReference, Dict]:
+    def _generate_dynamodb_policy(
+        self, bootstrap_resources: TestBootstrapResources
+    ) -> Tuple[k8s.CustomResourceReference, Dict]:
         resource_name = random_suffix_name("dynamodb-scaling-policy", 32)
 
         replacements = REPLACEMENT_VALUES.copy()
@@ -53,13 +56,14 @@ class TestScalingPolicy:
         )
 
         return (reference, policy)
-    
-    def _get_dynamodb_scaling_policy_exists(self, applicationautoscaling_client, policy_name: str) -> bool:
+
+    def _get_dynamodb_scaling_policy_exists(
+        self, applicationautoscaling_client, policy_name: str
+    ) -> bool:
         targets = applicationautoscaling_client.describe_scaling_policies(
-            ServiceNamespace="dynamodb",
-            PolicyNames=[policy_name]
+            ServiceNamespace="dynamodb", PolicyNames=[policy_name]
         )
-        
+
         return len(targets["ScalingPolicies"]) == 1
 
     def test_smoke(self, applicationautoscaling_client):
@@ -71,12 +75,15 @@ class TestScalingPolicy:
         policyName = policy["spec"].get("policyName")
         assert policyName is not None
 
-        exists = self._get_dynamodb_scaling_policy_exists(applicationautoscaling_client, policyName)
+        exists = self._get_dynamodb_scaling_policy_exists(
+            applicationautoscaling_client, policyName
+        )
         assert exists
 
         _, deleted = k8s.delete_custom_resource(reference)
         assert deleted is True
 
-        exists = self._get_dynamodb_scaling_policy_exists(applicationautoscaling_client, policyName)
+        exists = self._get_dynamodb_scaling_policy_exists(
+            applicationautoscaling_client, policyName
+        )
         assert not exists
-

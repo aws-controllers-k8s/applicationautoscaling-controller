@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. A copy of the
 # License is located at
 #
-#	 http://aws.amazon.com/apache2.0/
+# 	 http://aws.amazon.com/apache2.0/
 #
 # or in the "license" file accompanying this file. This file is distributed
 # on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
@@ -19,7 +19,7 @@ from e2e.bootstrap_resources import get_bootstrap_resources
 
 # Taken from the SageMaker Python SDK
 # Rather than including the entire SDK
-XGBOOST_IMAGE_URIS = {
+SAGEMAKER_XGBOOST_IMAGE_URIS = {
     "us-west-1": "746614075791.dkr.ecr.us-west-1.amazonaws.com",
     "us-west-2": "246618743249.dkr.ecr.us-west-2.amazonaws.com",
     "us-east-1": "683313688378.dkr.ecr.us-east-1.amazonaws.com",
@@ -43,7 +43,7 @@ XGBOOST_IMAGE_URIS = {
 }
 
 REPLACEMENT_VALUES = {
-    "SAGEMAKER_DATA_BUCKET": get_bootstrap_resources().DataBucketName,
-    "EXECUTION_ROLE_ARN": get_bootstrap_resources().ExecutionRoleARN,
-    "XGBOOST_IMAGE_URI": f"{XGBOOST_IMAGE_URIS[get_region()]}/sagemaker-xgboost:1.0-1-cpu-py3",
+    "SAGEMAKER_DATA_BUCKET": get_bootstrap_resources().SageMakerDataBucketName,
+    "SAGEMAKER_EXECUTION_ROLE_ARN": get_bootstrap_resources().SageMakerExecutionRoleARN,
+    "SAGEMAKER_XGBOOST_IMAGE_URI": f"{SAGEMAKER_XGBOOST_IMAGE_URIS[get_region()]}/sagemaker-xgboost:1.0-1-cpu-py3",
 }

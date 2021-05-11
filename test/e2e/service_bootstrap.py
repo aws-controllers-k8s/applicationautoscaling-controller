@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. A copy of the
 # License is located at
 #
-#	 http://aws.amazon.com/apache2.0/
+# 	 http://aws.amazon.com/apache2.0/
 #
 # or in the "license" file accompanying this file. This file is distributed
 # on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
@@ -26,22 +26,25 @@ from e2e.bootstrap_resources import TestBootstrapResources
 from acktest.aws.s3 import duplicate_bucket_contents
 from e2e.bootstrap_resources import TestBootstrapResources, SAGEMAKER_SOURCE_DATA_BUCKET
 
+
 def service_bootstrap() -> dict:
     logging.getLogger().setLevel(logging.INFO)
 
     scalable_table = create_dynamodb_table()
     registered_table = create_dynamodb_table()
 
-    if not wait_for_dynamodb_table_active(scalable_table) \
-        or not wait_for_dynamodb_table_active(registered_table):
+    if not wait_for_dynamodb_table_active(
+        scalable_table
+    ) or not wait_for_dynamodb_table_active(registered_table):
         raise Exception("DynamoDB tables did not become ACTIVE")
 
     return TestBootstrapResources(
         create_data_bucket(),
         create_execution_role(),
         scalable_table,
-        register_scalable_dynamodb_table(registered_table)
+        register_scalable_dynamodb_table(registered_table),
     ).__dict__
+
 
 def create_execution_role() -> str:
     region = get_region()
@@ -84,6 +87,7 @@ def create_execution_role() -> str:
 
     return resource_arn
 
+
 def create_data_bucket() -> str:
     region = get_region()
     account_id = get_account_id()
@@ -111,6 +115,7 @@ def create_data_bucket() -> str:
 
     return bucket_name
 
+
 def create_dynamodb_table() -> str:
     """Create a DynamoDB table with a randomised table name.
 
@@ -119,27 +124,18 @@ def create_dynamodb_table() -> str:
     """
     region = get_region()
     account_id = get_account_id()
-    table_name = resources.random_suffix_name(f"ack-autoscaling-table-{region}-{account_id}", 63)
+    table_name = resources.random_suffix_name(
+        f"ack-autoscaling-table-{region}-{account_id}", 63
+    )
 
     dynamodb = boto3.client("dynamodb", region_name=region)
     table = dynamodb.create_table(
         TableName=table_name,
-        KeySchema=[
-            {
-                "AttributeName": "TablePrimaryAttribute",
-                "KeyType": "HASH"
-            }
-        ],
+        KeySchema=[{"AttributeName": "TablePrimaryAttribute", "KeyType": "HASH"}],
         AttributeDefinitions=[
-            {
-                "AttributeName": "TablePrimaryAttribute",
-                "AttributeType": "N"
-            }
+            {"AttributeName": "TablePrimaryAttribute", "AttributeType": "N"}
         ],
-        ProvisionedThroughput={
-            "ReadCapacityUnits": 10,
-            "WriteCapacityUnits": 10
-        }
+        ProvisionedThroughput={"ReadCapacityUnits": 10, "WriteCapacityUnits": 10},
     )
 
     assert table["TableDescription"]["TableName"] == table_name
@@ -147,7 +143,10 @@ def create_dynamodb_table() -> str:
 
     return table_name
 
-def wait_for_dynamodb_table_active(table_name: str, wait_periods: int = 6, period_length: int = 5) -> bool:
+
+def wait_for_dynamodb_table_active(
+    table_name: str, wait_periods: int = 6, period_length: int = 5
+) -> bool:
     """Wait for the given DynamoDB table to reach ACTIVE status.
 
     Args:
@@ -163,20 +162,18 @@ def wait_for_dynamodb_table_active(table_name: str, wait_periods: int = 6, perio
 
     for _ in range(wait_periods):
         sleep(period_length)
-        table = dynamodb.describe_table(
-            TableName=table_name
-        )
+        table = dynamodb.describe_table(TableName=table_name)
 
-        status = table['Table']['TableStatus']
-        if status == 'ACTIVE':
+        status = table["Table"]["TableStatus"]
+        if status == "ACTIVE":
             logging.info(f"DynamoDB table {table_name} has reached status {status}")
             return True
 
         logging.debug(f"DynamoDB table {table_name} is in status {status}. Waiting...")
 
-    logging.error(
-        f"Wait for DynamoDB table {table_name} to become ACTIVE timed out")
+    logging.error(f"Wait for DynamoDB table {table_name} to become ACTIVE timed out")
     return False
+
 
 def register_scalable_dynamodb_table(table_name: str) -> str:
     """Registers a DynamoDB table as a scalable target.
@@ -189,7 +186,9 @@ def register_scalable_dynamodb_table(table_name: str) -> str:
     """
     region = get_region()
 
-    applicationautoscaling_client = boto3.client("application-autoscaling", region_name=region)
+    applicationautoscaling_client = boto3.client(
+        "application-autoscaling", region_name=region
+    )
     applicationautoscaling_client.register_scalable_target(
         ServiceNamespace="dynamodb",
         ResourceId=f"table/{table_name}",
@@ -201,6 +200,7 @@ def register_scalable_dynamodb_table(table_name: str) -> str:
     logging.info(f"Registered DynamoDB table {table_name} as scalable target")
 
     return table_name
+
 
 if __name__ == "__main__":
     config = service_bootstrap()
