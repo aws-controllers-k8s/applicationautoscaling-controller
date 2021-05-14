@@ -23,7 +23,6 @@ func (rm *resourceManager) customDescribeScalableTarget(
 	latest *resource,
 	input *svcsdk.DescribeScalableTargetsInput,
 ) {
-	//input := &svcsdk.DescribeScalableTargetsInput{}
 	latestSpec := latest.ko.Spec
 
 	var resourceIDList []*string

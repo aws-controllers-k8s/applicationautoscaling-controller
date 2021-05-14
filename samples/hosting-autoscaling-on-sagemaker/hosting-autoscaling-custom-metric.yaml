@@ -1,0 +1,37 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: m-target-may13-suspended
+spec:
+  maxCapacity: 2
+  minCapacity: 1
+  resourceID: endpoint/m-no-ssm-custom-model-1/variant/AllTraffic
+  scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  serviceNamespace: sagemaker
+  suspendedState:
+    dynamicScalingInSuspended: true
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: m-scalingpolicy-may13-custom
+spec:
+  policyName: m-scalingpolicy-may13-custom
+  policyType: TargetTrackingScaling
+  resourceID: endpoint/m-no-ssm-custom-model-1/variant/AllTraffic
+  scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  serviceNamespace: sagemaker
+  targetTrackingScalingPolicyConfiguration:
+    targetValue: 60
+    scaleInCooldown: 700
+    scaleOutCooldown: 300
+    customizedMetricSpecification:
+      metricName: CPUUtilization
+      namespace: /aws/sagemaker/Endpoints
+      dimensions:
+          - name: EndpointName
+            value: m-no-ssm-custom-model-1
+          - name: VariantName
+            value: AllTraffic
+      statistic: Average
+      unit: Percent

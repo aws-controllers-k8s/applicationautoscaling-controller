@@ -175,8 +175,6 @@ type ScalingPolicyStatus struct {
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
 	// The CloudWatch alarms created for the target tracking scaling policy.
 	Alarms []*Alarm `json:"alarms,omitempty"`
-	// The Amazon Resource Name (ARN) of the resulting scaling policy.
-	PolicyARN *string `json:"policyARN,omitempty"`
 }
 
 // ScalingPolicy is the Schema for the ScalingPolicies API

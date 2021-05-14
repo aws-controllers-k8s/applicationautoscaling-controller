@@ -14,8 +14,6 @@
 import pytest
 from typing import Dict, Any
 from pathlib import Path
-import time
-import boto3
 
 from acktest.k8s import resource as k8s
 from acktest.resources import load_resource_file

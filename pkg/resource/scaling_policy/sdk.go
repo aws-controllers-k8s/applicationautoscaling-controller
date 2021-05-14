@@ -83,9 +83,11 @@ func (rm *resourceManager) sdkFind(
 			ko.Status.Alarms = nil
 		}
 		if elem.PolicyARN != nil {
-			ko.Status.PolicyARN = elem.PolicyARN
-		} else {
-			ko.Status.PolicyARN = nil
+			if ko.Status.ACKResourceMetadata == nil {
+				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+			}
+			tmpARN := ackv1alpha1.AWSResourceName(*elem.PolicyARN)
+			ko.Status.ACKResourceMetadata.ARN = &tmpARN
 		}
 		if elem.PolicyName != nil {
 			ko.Spec.PolicyName = elem.PolicyName
@@ -273,10 +275,12 @@ func (rm *resourceManager) sdkCreate(
 	} else {
 		ko.Status.Alarms = nil
 	}
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
 	if resp.PolicyARN != nil {
-		ko.Status.PolicyARN = resp.PolicyARN
-	} else {
-		ko.Status.PolicyARN = nil
+		arn := ackv1alpha1.AWSResourceName(*resp.PolicyARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
 	}
 
 	rm.setStatusDefaults(ko)
