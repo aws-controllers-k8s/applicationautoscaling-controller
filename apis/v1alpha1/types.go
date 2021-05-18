@@ -139,19 +139,16 @@ type ScalingPolicy_SDK struct {
 }
 
 // Represents a scheduled action.
-type ScheduledAction_SDK struct {
-	CreationTime      *metav1.Time `json:"creationTime,omitempty"`
-	EndTime           *metav1.Time `json:"endTime,omitempty"`
-	ResourceID        *string      `json:"resourceID,omitempty"`
-	ScalableDimension *string      `json:"scalableDimension,omitempty"`
-	// Represents the minimum and maximum capacity for a scheduled action.
-	ScalableTargetAction *ScalableTargetAction `json:"scalableTargetAction,omitempty"`
-	Schedule             *string               `json:"schedule,omitempty"`
-	ScheduledActionARN   *string               `json:"scheduledActionARN,omitempty"`
-	ScheduledActionName  *string               `json:"scheduledActionName,omitempty"`
-	ServiceNamespace     *string               `json:"serviceNamespace,omitempty"`
-	StartTime            *metav1.Time          `json:"startTime,omitempty"`
-	Timezone             *string               `json:"timezone,omitempty"`
+type ScheduledAction struct {
+	CreationTime       *metav1.Time `json:"creationTime,omitempty"`
+	EndTime            *metav1.Time `json:"endTime,omitempty"`
+	ResourceID         *string      `json:"resourceID,omitempty"`
+	ScalableDimension  *string      `json:"scalableDimension,omitempty"`
+	Schedule           *string      `json:"schedule,omitempty"`
+	ScheduledActionARN *string      `json:"scheduledActionARN,omitempty"`
+	ServiceNamespace   *string      `json:"serviceNamespace,omitempty"`
+	StartTime          *metav1.Time `json:"startTime,omitempty"`
+	Timezone           *string      `json:"timezone,omitempty"`
 }
 
 // Represents a step adjustment for a StepScalingPolicyConfiguration (https://docs.aws.amazon.com/autoscaling/application/APIReference/API_StepScalingPolicyConfiguration.html).

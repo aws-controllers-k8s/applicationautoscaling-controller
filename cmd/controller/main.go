@@ -32,7 +32,6 @@ import (
 
 	_ "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource/scalable_target"
 	_ "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource/scaling_policy"
-	_ "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource/scheduled_action"
 )
 
 var (
