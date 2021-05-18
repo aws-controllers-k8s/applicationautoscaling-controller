@@ -40,3 +40,24 @@ def load_autoscaling_resource(
         resource_name,
         additional_replacements=additional_replacements,
     )
+
+
+def create_applicationautoscaling_resource(
+    resource_plural, resource_name, spec_file, replacements, namespace="default"
+):
+    """
+    Wrapper around k8s.load_and_create_resource to create a ApplicationAutoscaling resource
+    """
+
+    reference, spec, resource = k8s.load_and_create_resource(
+        resource_directory,
+        CRD_GROUP,
+        CRD_VERSION,
+        resource_plural,
+        resource_name,
+        spec_file,
+        replacements,
+        namespace,
+    )
+
+    return reference, spec, resource

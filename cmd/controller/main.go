@@ -68,6 +68,7 @@ func main() {
 		MetricsBindAddress: ackCfg.MetricsAddr,
 		LeaderElection:     ackCfg.EnableLeaderElection,
 		LeaderElectionID:   awsServiceAPIGroup,
+		Namespace:          ackCfg.WatchNamespace,
 	})
 	if err != nil {
 		setupLog.Error(
