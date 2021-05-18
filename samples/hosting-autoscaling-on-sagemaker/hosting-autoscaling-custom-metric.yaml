@@ -1,11 +1,11 @@
 apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
 kind: ScalableTarget
 metadata:
-  name: m-target-may13-suspended
+  name: ack-scalable-target-custom
 spec:
   maxCapacity: 2
   minCapacity: 1
-  resourceID: endpoint/m-no-ssm-custom-model-1/variant/AllTraffic
+  resourceID: endpoint/<endpoint_name>/variant/<variant_name>
   scalableDimension: "sagemaker:variant:DesiredInstanceCount"
   serviceNamespace: sagemaker
   suspendedState:
@@ -14,11 +14,11 @@ spec:
 apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
 kind: ScalingPolicy
 metadata:
-  name: m-scalingpolicy-may13-custom
+  name: ack-scaling-policy-custom
 spec:
-  policyName: m-scalingpolicy-may13-custom
+  policyName: ack-scaling-policy-custom
   policyType: TargetTrackingScaling
-  resourceID: endpoint/m-no-ssm-custom-model-1/variant/AllTraffic
+  resourceID: endpoint/<endpoint_name>/variant/<variant_name>
   scalableDimension: "sagemaker:variant:DesiredInstanceCount"
   serviceNamespace: sagemaker
   targetTrackingScalingPolicyConfiguration:
@@ -30,8 +30,8 @@ spec:
       namespace: /aws/sagemaker/Endpoints
       dimensions:
           - name: EndpointName
-            value: m-no-ssm-custom-model-1
+            value: <endpoint_name>
           - name: VariantName
-            value: AllTraffic
+            value: <variant_name>
       statistic: Average
       unit: Percent

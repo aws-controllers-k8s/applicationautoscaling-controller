@@ -1,22 +1,22 @@
 apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
 kind: ScalableTarget
 metadata:
-  name: m-target-may13
+  name: ack-scalable-target-predfined
 spec:
   maxCapacity: 2
   minCapacity: 1
-  resourceID: endpoint/m-no-ssm-custom-model-1/variant/AllTraffic
+  resourceID: endpoint/<endpoint_name>/variant/<variant_name>
   scalableDimension: "sagemaker:variant:DesiredInstanceCount"
   serviceNamespace: sagemaker
 ---
 apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
 kind: ScalingPolicy
 metadata:
-  name: m-scalingpolicy-may13
+  name: ack-scaling-policy-predefined
 spec:
-  policyName: m-scalingpolicy-may13
+  policyName: ack-scaling-policy-predefined
   policyType: TargetTrackingScaling
-  resourceID: endpoint/m-no-ssm-custom-model-1/variant/AllTraffic
+  resourceID: endpoint/<endpoint_name>/variant/<variant_name>
   scalableDimension: "sagemaker:variant:DesiredInstanceCount"
   serviceNamespace: sagemaker
   targetTrackingScalingPolicyConfiguration:

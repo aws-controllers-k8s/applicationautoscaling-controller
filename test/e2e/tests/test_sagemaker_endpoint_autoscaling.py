@@ -14,6 +14,7 @@
 """
 
 import boto3
+import botocore
 import pytest
 import logging
 from typing import Dict, Tuple
@@ -114,7 +115,6 @@ def generate_sagemaker_policy(generate_sagemaker_target):
     )
 
     assert policy_resource is not None
-    assert k8s.get_resource_arn(policy_resource) is not None
 
     yield (resource_id, target_reference, policy_resource, policy_reference)
 
@@ -137,9 +137,9 @@ class TestSageMakerEndpointAutoscaling:
 
             assert len(targets["ScalableTargets"]) == expectedTargets
             return targets["ScalableTargets"]
-        except BaseException:
+        except botocore.exceptions.ClientError as error:
             logging.error(
-                f"ApplicationAutoscaling could not find a scalableTarget for the resource {resource_id}"
+                f"ApplicationAutoscaling could not find a scalableTarget for the resource {resource_id}. Error {error}."
             )
             return None
 
@@ -153,9 +153,9 @@ class TestSageMakerEndpointAutoscaling:
             )
             assert len(policies["ScalingPolicies"]) == expectedPolicies
             return policies["ScalingPolicies"]
-        except BaseException:
+        except botocore.exceptions.ClientError as error:
             logging.error(
-                f"ApplicationAutoscaling could not find a scalingPolicy for the resource {resource_id}"
+                f"ApplicationAutoscaling could not find a scalingPolicy for the resource {resource_id}. Error {error}."
             )
             return None
 
@@ -195,7 +195,7 @@ class TestSageMakerEndpointAutoscaling:
             applicationautoscaling_client, resource_id, 0
         )
 
-        # TODO: Ideally this check should pass after line 190 itself; but it requires the scalabletarget to be deleted too.
+        # TODO: Ideally this check should pass after line 188 itself; but it requires the scalabletarget to be deleted too.
         policy_description = self.get_sagemaker_scaling_policy_description(
             applicationautoscaling_client, resource_id, 0
         )
