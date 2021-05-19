@@ -2,12 +2,29 @@ operations:
   PutScalingPolicy:
     operation_type: Create
     resource_name: ScalingPolicy
-  PutScheduledAction:
-    operation_type: Create
-    resource_name: ScheduledAction
   RegisterScalableTarget:
     operation_type: Create
     resource_name: ScalableTarget
   DeregisterScalableTarget:
     operation_type: Delete
     resource_name: ScalableTarget
+resources:
+  ScalableTarget:
+    is_adoptable: false
+    hooks:
+        sdk_read_many_post_build_request:
+          code: rm.customDescribeScalableTarget(ctx, r, input)
+    fields:
+      ResourceID:
+        is_name: true
+  ScalingPolicy:
+    is_adoptable: false
+    fields:
+      ResourceID:
+        is_name: true
+      PolicyARN: 
+        is_arn: true
+ignore:
+    resource_names:
+      - ScheduledAction
+      

@@ -63,9 +63,9 @@ rules:
   - patch
   - update
 - apiGroups:
-  - applicationautoscaling.services.k8s.aws
+  - services.k8s.aws
   resources:
-  - scheduledactions
+  - adoptedresources
   verbs:
   - create
   - delete
@@ -75,9 +75,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - applicationautoscaling.services.k8s.aws
+  - services.k8s.aws
   resources:
-  - scheduledactions/status
+  - adoptedresources/status
   verbs:
   - get
   - patch

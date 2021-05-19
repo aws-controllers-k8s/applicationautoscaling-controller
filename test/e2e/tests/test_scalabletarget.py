@@ -31,10 +31,13 @@ RESOURCE_PLURAL = "scalabletargets"
 def applicationautoscaling_client():
     return boto3.client("application-autoscaling")
 
+
 @service_marker
 @pytest.mark.canary
 class TestScalableTarget:
-    def _generate_dynamodb_target(self, bootstrap_resources: TestBootstrapResources) -> Tuple[k8s.CustomResourceReference, Dict]:
+    def _generate_dynamodb_target(
+        self, bootstrap_resources: TestBootstrapResources
+    ) -> Tuple[k8s.CustomResourceReference, Dict]:
         resource_name = random_suffix_name("dynamodb-scalable-target", 32)
 
         replacements = REPLACEMENT_VALUES.copy()
@@ -52,13 +55,14 @@ class TestScalableTarget:
         )
 
         return (reference, target)
-    
-    def _get_dynamodb_scalable_target_exists(self, applicationautoscaling_client, resource_id: str) -> bool:
+
+    def _get_dynamodb_scalable_target_exists(
+        self, applicationautoscaling_client, resource_id: str
+    ) -> bool:
         targets = applicationautoscaling_client.describe_scalable_targets(
-            ServiceNamespace="dynamodb",
-            ResourceIds=[resource_id]
+            ServiceNamespace="dynamodb", ResourceIds=[resource_id]
         )
-        
+
         return len(targets["ScalableTargets"]) == 1
 
     def test_smoke(self, applicationautoscaling_client):
@@ -70,12 +74,15 @@ class TestScalableTarget:
         resourceId = target["spec"].get("resourceID")
         assert resourceId is not None
 
-        exists = self._get_dynamodb_scalable_target_exists(applicationautoscaling_client, resourceId)
+        exists = self._get_dynamodb_scalable_target_exists(
+            applicationautoscaling_client, resourceId
+        )
         assert exists
 
         _, deleted = k8s.delete_custom_resource(reference)
         assert deleted is True
 
-        exists = self._get_dynamodb_scalable_target_exists(applicationautoscaling_client, resourceId)
+        exists = self._get_dynamodb_scalable_target_exists(
+            applicationautoscaling_client, resourceId
+        )
         assert not exists
-

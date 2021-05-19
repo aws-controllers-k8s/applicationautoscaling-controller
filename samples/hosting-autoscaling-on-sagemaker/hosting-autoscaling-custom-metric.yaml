@@ -1,0 +1,37 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  name: ack-scalable-target-custom
+spec:
+  maxCapacity: 2
+  minCapacity: 1
+  resourceID: endpoint/<endpoint_name>/variant/<variant_name>
+  scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  serviceNamespace: sagemaker
+  suspendedState:
+    dynamicScalingInSuspended: true
+---
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: ack-scaling-policy-custom
+spec:
+  policyName: ack-scaling-policy-custom
+  policyType: TargetTrackingScaling
+  resourceID: endpoint/<endpoint_name>/variant/<variant_name>
+  scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  serviceNamespace: sagemaker
+  targetTrackingScalingPolicyConfiguration:
+    targetValue: 60
+    scaleInCooldown: 700
+    scaleOutCooldown: 300
+    customizedMetricSpecification:
+      metricName: CPUUtilization
+      namespace: /aws/sagemaker/Endpoints
+      dimensions:
+          - name: EndpointName
+            value: <endpoint_name>
+          - name: VariantName
+            value: <variant_name>
+      statistic: Average
+      unit: Percent

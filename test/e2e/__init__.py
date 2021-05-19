@@ -4,7 +4,7 @@
 # not use this file except in compliance with the License. A copy of the
 # License is located at
 #
-#	 http://aws.amazon.com/apache2.0/
+# 	 http://aws.amazon.com/apache2.0/
 #
 # or in the "license" file accompanying this file. This file is distributed
 # on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
@@ -15,6 +15,7 @@ import pytest
 from typing import Dict, Any
 from pathlib import Path
 
+from acktest.k8s import resource as k8s
 from acktest.resources import load_resource_file
 
 SERVICE_NAME = "applicationautoscaling"
@@ -26,8 +27,37 @@ service_marker = pytest.mark.service(arg=SERVICE_NAME)
 
 bootstrap_directory = Path(__file__).parent
 resource_directory = Path(__file__).parent / "resources"
-def load_autoscaling_resource(resource_name: str, additional_replacements: Dict[str, Any] = {}):
-    """ Overrides the default `load_resource_file` to access the specific resources
+
+
+def load_autoscaling_resource(
+    resource_name: str, additional_replacements: Dict[str, Any] = {}
+):
+    """Overrides the default `load_resource_file` to access the specific resources
     directory for the current service.
     """
-    return load_resource_file(resource_directory, resource_name, additional_replacements=additional_replacements)
+    return load_resource_file(
+        resource_directory,
+        resource_name,
+        additional_replacements=additional_replacements,
+    )
+
+
+def create_applicationautoscaling_resource(
+    resource_plural, resource_name, spec_file, replacements, namespace="default"
+):
+    """
+    Wrapper around k8s.load_and_create_resource to create a ApplicationAutoscaling resource
+    """
+
+    reference, spec, resource = k8s.load_and_create_resource(
+        resource_directory,
+        CRD_GROUP,
+        CRD_VERSION,
+        resource_plural,
+        resource_name,
+        spec_file,
+        replacements,
+        namespace,
+    )
+
+    return reference, spec, resource

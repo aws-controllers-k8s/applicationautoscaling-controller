@@ -28,10 +28,10 @@ import (
 
 	svctypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
 	svcresource "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource"
+	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 
 	_ "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource/scalable_target"
 	_ "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource/scaling_policy"
-	_ "github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/resource/scheduled_action"
 )
 
 var (
@@ -44,6 +44,7 @@ var (
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = svctypes.AddToScheme(scheme)
+	_ = ackv1alpha1.AddToScheme(scheme)
 }
 
 func main() {
@@ -66,6 +67,7 @@ func main() {
 		MetricsBindAddress: ackCfg.MetricsAddr,
 		LeaderElection:     ackCfg.EnableLeaderElection,
 		LeaderElectionID:   awsServiceAPIGroup,
+		Namespace:          ackCfg.WatchNamespace,
 	})
 	if err != nil {
 		setupLog.Error(
