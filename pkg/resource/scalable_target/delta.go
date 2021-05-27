@@ -31,6 +31,7 @@ func newResourceDelta(
 		delta.Add("", a, b)
 		return delta
 	}
+	customSetDefaults(a)
 
 	if ackcompare.HasNilDifference(a.ko.Spec.MaxCapacity, b.ko.Spec.MaxCapacity) {
 		delta.Add("Spec.MaxCapacity", a.ko.Spec.MaxCapacity, b.ko.Spec.MaxCapacity)
@@ -65,6 +66,31 @@ func newResourceDelta(
 	} else if a.ko.Spec.ServiceNamespace != nil && b.ko.Spec.ServiceNamespace != nil {
 		if *a.ko.Spec.ServiceNamespace != *b.ko.Spec.ServiceNamespace {
 			delta.Add("Spec.ServiceNamespace", a.ko.Spec.ServiceNamespace, b.ko.Spec.ServiceNamespace)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.SuspendedState, b.ko.Spec.SuspendedState) {
+		delta.Add("Spec.SuspendedState", a.ko.Spec.SuspendedState, b.ko.Spec.SuspendedState)
+	} else if a.ko.Spec.SuspendedState != nil && b.ko.Spec.SuspendedState != nil {
+		if ackcompare.HasNilDifference(a.ko.Spec.SuspendedState.DynamicScalingInSuspended, b.ko.Spec.SuspendedState.DynamicScalingInSuspended) {
+			delta.Add("Spec.SuspendedState.DynamicScalingInSuspended", a.ko.Spec.SuspendedState.DynamicScalingInSuspended, b.ko.Spec.SuspendedState.DynamicScalingInSuspended)
+		} else if a.ko.Spec.SuspendedState.DynamicScalingInSuspended != nil && b.ko.Spec.SuspendedState.DynamicScalingInSuspended != nil {
+			if *a.ko.Spec.SuspendedState.DynamicScalingInSuspended != *b.ko.Spec.SuspendedState.DynamicScalingInSuspended {
+				delta.Add("Spec.SuspendedState.DynamicScalingInSuspended", a.ko.Spec.SuspendedState.DynamicScalingInSuspended, b.ko.Spec.SuspendedState.DynamicScalingInSuspended)
+			}
+		}
+		if ackcompare.HasNilDifference(a.ko.Spec.SuspendedState.DynamicScalingOutSuspended, b.ko.Spec.SuspendedState.DynamicScalingOutSuspended) {
+			delta.Add("Spec.SuspendedState.DynamicScalingOutSuspended", a.ko.Spec.SuspendedState.DynamicScalingOutSuspended, b.ko.Spec.SuspendedState.DynamicScalingOutSuspended)
+		} else if a.ko.Spec.SuspendedState.DynamicScalingOutSuspended != nil && b.ko.Spec.SuspendedState.DynamicScalingOutSuspended != nil {
+			if *a.ko.Spec.SuspendedState.DynamicScalingOutSuspended != *b.ko.Spec.SuspendedState.DynamicScalingOutSuspended {
+				delta.Add("Spec.SuspendedState.DynamicScalingOutSuspended", a.ko.Spec.SuspendedState.DynamicScalingOutSuspended, b.ko.Spec.SuspendedState.DynamicScalingOutSuspended)
+			}
+		}
+		if ackcompare.HasNilDifference(a.ko.Spec.SuspendedState.ScheduledScalingSuspended, b.ko.Spec.SuspendedState.ScheduledScalingSuspended) {
+			delta.Add("Spec.SuspendedState.ScheduledScalingSuspended", a.ko.Spec.SuspendedState.ScheduledScalingSuspended, b.ko.Spec.SuspendedState.ScheduledScalingSuspended)
+		} else if a.ko.Spec.SuspendedState.ScheduledScalingSuspended != nil && b.ko.Spec.SuspendedState.ScheduledScalingSuspended != nil {
+			if *a.ko.Spec.SuspendedState.ScheduledScalingSuspended != *b.ko.Spec.SuspendedState.ScheduledScalingSuspended {
+				delta.Add("Spec.SuspendedState.ScheduledScalingSuspended", a.ko.Spec.SuspendedState.ScheduledScalingSuspended, b.ko.Spec.SuspendedState.ScheduledScalingSuspended)
+			}
 		}
 	}
 

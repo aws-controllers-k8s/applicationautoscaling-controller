@@ -14,14 +14,13 @@ resources:
     hooks:
         sdk_read_many_post_build_request:
           code: rm.customDescribeScalableTarget(ctx, r, input)
+        delta_pre_compare:
+          code: customSetDefaults(a)
         delta_post_compare:
           code: customCompare(a, b, delta)
     fields:
       ResourceID:
         is_name: true
-      SuspendedState:
-        compare:
-          is_ignored: true
       RoleARN:
         compare:
           is_ignored: true
