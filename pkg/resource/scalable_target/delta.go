@@ -31,7 +31,7 @@ func newResourceDelta(
 		delta.Add("", a, b)
 		return delta
 	}
-	customSetDefaults(a)
+	customSetDefaults(a, b)
 
 	if ackcompare.HasNilDifference(a.ko.Spec.MaxCapacity, b.ko.Spec.MaxCapacity) {
 		delta.Add("Spec.MaxCapacity", a.ko.Spec.MaxCapacity, b.ko.Spec.MaxCapacity)
@@ -52,6 +52,13 @@ func newResourceDelta(
 	} else if a.ko.Spec.ResourceID != nil && b.ko.Spec.ResourceID != nil {
 		if *a.ko.Spec.ResourceID != *b.ko.Spec.ResourceID {
 			delta.Add("Spec.ResourceID", a.ko.Spec.ResourceID, b.ko.Spec.ResourceID)
+		}
+	}
+	if ackcompare.HasNilDifference(a.ko.Spec.RoleARN, b.ko.Spec.RoleARN) {
+		delta.Add("Spec.RoleARN", a.ko.Spec.RoleARN, b.ko.Spec.RoleARN)
+	} else if a.ko.Spec.RoleARN != nil && b.ko.Spec.RoleARN != nil {
+		if *a.ko.Spec.RoleARN != *b.ko.Spec.RoleARN {
+			delta.Add("Spec.RoleARN", a.ko.Spec.RoleARN, b.ko.Spec.RoleARN)
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.ScalableDimension, b.ko.Spec.ScalableDimension) {
@@ -94,6 +101,5 @@ func newResourceDelta(
 		}
 	}
 
-	customCompare(a, b, delta)
 	return delta
 }
