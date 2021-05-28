@@ -15,26 +15,30 @@ package scalable_target
 
 import (
 	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
+	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 )
 
 func customSetDefaults(
 	a *resource,
 	b *resource,
 ) {
-	if a.ko.Spec.SuspendedState == nil && b.ko.Spec.SuspendedState != nil {
+	if ackcompare.IsNil(a.ko.Spec.SuspendedState) && ackcompare.IsNotNil(b.ko.Spec.SuspendedState) {
 		a.ko.Spec.SuspendedState = &svcapitypes.SuspendedState{}
 	}
-	if a.ko.Spec.SuspendedState.DynamicScalingInSuspended == nil && b.ko.Spec.SuspendedState.DynamicScalingInSuspended != nil {
-		a.ko.Spec.SuspendedState.DynamicScalingInSuspended = b.ko.Spec.SuspendedState.DynamicScalingInSuspended
-	}
-	if a.ko.Spec.SuspendedState.DynamicScalingOutSuspended == nil && b.ko.Spec.SuspendedState.DynamicScalingOutSuspended != nil {
-		a.ko.Spec.SuspendedState.DynamicScalingOutSuspended = b.ko.Spec.SuspendedState.DynamicScalingOutSuspended
-	}
-	if a.ko.Spec.SuspendedState.ScheduledScalingSuspended == nil && b.ko.Spec.SuspendedState.ScheduledScalingSuspended != nil {
-		a.ko.Spec.SuspendedState.ScheduledScalingSuspended = b.ko.Spec.SuspendedState.ScheduledScalingSuspended
+
+	if ackcompare.IsNotNil(a.ko.Spec.SuspendedState) && ackcompare.IsNotNil(b.ko.Spec.SuspendedState) {
+		if ackcompare.IsNil(a.ko.Spec.SuspendedState.DynamicScalingInSuspended) && ackcompare.IsNotNil(b.ko.Spec.SuspendedState.DynamicScalingInSuspended) {
+			a.ko.Spec.SuspendedState.DynamicScalingInSuspended = b.ko.Spec.SuspendedState.DynamicScalingInSuspended
+		}
+		if ackcompare.IsNil(a.ko.Spec.SuspendedState.DynamicScalingOutSuspended) && ackcompare.IsNotNil(b.ko.Spec.SuspendedState.DynamicScalingOutSuspended) {
+			a.ko.Spec.SuspendedState.DynamicScalingOutSuspended = b.ko.Spec.SuspendedState.DynamicScalingOutSuspended
+		}
+		if ackcompare.IsNil(a.ko.Spec.SuspendedState.ScheduledScalingSuspended) && ackcompare.IsNotNil(b.ko.Spec.SuspendedState.ScheduledScalingSuspended) {
+			a.ko.Spec.SuspendedState.ScheduledScalingSuspended = b.ko.Spec.SuspendedState.ScheduledScalingSuspended
+		}
 	}
 
-	if a.ko.Spec.RoleARN == nil && b.ko.Spec.RoleARN != nil {
+	if ackcompare.IsNil(a.ko.Spec.RoleARN) && ackcompare.IsNotNil(b.ko.Spec.RoleARN) {
 		a.ko.Spec.RoleARN = b.ko.Spec.RoleARN
 	}
 
