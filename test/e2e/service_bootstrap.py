@@ -32,8 +32,38 @@ from e2e.bootstrap_resources import TestBootstrapResources, SAGEMAKER_SOURCE_DAT
 def service_bootstrap() -> dict:
     logging.getLogger().setLevel(logging.INFO)
 
-    scalable_table = create_dynamodb_table()
-    registered_table = create_dynamodb_table()
+    try:
+        data_bucket = create_data_bucket()
+    except:
+        data_bucket = ""
+        logging.exception(
+            "Unable to create data bucket"
+        )
+
+    try:
+        execution_role = create_execution_role()
+    except:
+        execution_role = ""
+        logging.exception(
+            "Unable to create execution role"
+        )
+
+    try:
+        scalable_table = create_dynamodb_table()
+    except:
+        scalable_table = ""
+        logging.exception(
+            "Unable to create DynamoDB table"
+        )
+
+    try:
+        registered_table = create_dynamodb_table()
+        register_scalable_dynamodb_table(registered_table)
+    except:
+        registered_table = ""
+        logging.exception(
+            "Unable to create DynamoDB table"
+        )
 
     if not wait_for_dynamodb_table_active(
         scalable_table
@@ -41,10 +71,10 @@ def service_bootstrap() -> dict:
         raise Exception("DynamoDB tables did not become ACTIVE")
 
     return TestBootstrapResources(
-        create_data_bucket(),
-        create_execution_role(),
+        data_bucket,
+        execution_role,
         scalable_table,
-        register_scalable_dynamodb_table(registered_table),
+        registered_table,
     ).__dict__
 
 
