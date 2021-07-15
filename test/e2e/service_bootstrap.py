@@ -17,7 +17,7 @@ integration tests.
 import boto3
 import logging
 from time import sleep
-import json
+import json, yaml, os
 import time
 import subprocess
 
@@ -32,8 +32,8 @@ from e2e.bootstrap_resources import TestBootstrapResources, SAGEMAKER_SOURCE_DAT
 def service_bootstrap() -> dict:
     logging.getLogger().setLevel(logging.INFO)
 
-    scalable_table = create_dynamodb_table()
-    registered_table = create_dynamodb_table()
+    scalable_table = create_dynamodb_table("ScalableDynamoTableName")
+    registered_table = create_dynamodb_table("RegisteredDynamoTableName")
 
     if not wait_for_dynamodb_table_active(
         scalable_table
@@ -47,6 +47,15 @@ def service_bootstrap() -> dict:
         register_scalable_dynamodb_table(registered_table),
     ).__dict__
 
+def write_bootstrap_config_entry(key: str, value: str, bootstrap_file_name: str = "bootstrap.yaml"):
+    bootstrap_file = bootstrap_directory / bootstrap_file_name
+    config = {key: value}
+
+    if os.path.isfile(bootstrap_file):
+        stream = resources.read_bootstrap_config(bootstrap_directory)
+        config.update(stream)
+    
+    resources.write_bootstrap_config(config, bootstrap_directory)
 
 def create_execution_role() -> str:
     region = get_region()
@@ -85,6 +94,8 @@ def create_execution_role() -> str:
     # resulting in failure that role is not present. So adding a delay
     # to allow for the role to become available
     sleep(10)
+
+    write_bootstrap_config_entry("SageMakerExecutionRoleARN", resource_arn)
     logging.info(f"Created SageMaker execution role {resource_arn}")
 
     return resource_arn
@@ -136,12 +147,13 @@ def create_data_bucket() -> str:
             ["aws", "s3", "sync", f"./{temp_dir}/", f"s3://{bucket_name}", "--quiet"]
         )
 
+    write_bootstrap_config_entry("SageMakerDataBucketName", bucket_name)
     logging.info(f"Synced data bucket")
 
     return bucket_name
 
 
-def create_dynamodb_table() -> str:
+def create_dynamodb_table(table_key: str) -> str:
     """Create a DynamoDB table with a randomised table name.
 
     Returns:
@@ -164,6 +176,8 @@ def create_dynamodb_table() -> str:
     )
 
     assert table["TableDescription"]["TableName"] == table_name
+
+    write_bootstrap_config_entry(table_key, table_name)
     logging.info(f"Created DynamoDB table {table_name}")
 
     return table_name
@@ -229,5 +243,3 @@ def register_scalable_dynamodb_table(table_name: str) -> str:
 
 if __name__ == "__main__":
     config = service_bootstrap()
-    # Write config to current directory by default
-    resources.write_bootstrap_config(config, bootstrap_directory)
