@@ -1,0 +1,8 @@
+service:
+  full_name: "AWS Auto Scaling"
+  short_name: "AutoScaling"
+  link: "https://aws.amazon.com/autoscaling/"
+  documentation: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/index.html"
+api_versions:
+  - api_version: v1alpha1
+    status: available
