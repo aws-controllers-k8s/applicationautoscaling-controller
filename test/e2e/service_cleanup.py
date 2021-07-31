@@ -69,6 +69,29 @@ def delete_data_bucket(bucket_name: str):
 
     logging.info(f"Deleted data bucket {bucket_name}")
 
+def deregister_scalable_dynamodb_table(table_name: str) -> str:
+    """Registers a DynamoDB table as a scalable target.
+
+    Args:
+        table_name: The DynamoDB table to register.
+
+    Returns:
+        str: The name of the DynamoDB table
+    """
+    region = get_region()
+
+    applicationautoscaling_client = boto3.client(
+        "application-autoscaling", region_name=region
+    )
+    applicationautoscaling_client.deregister_scalable_target(
+        ServiceNamespace="dynamodb",
+        ResourceId=f"table/{table_name}",
+        ScalableDimension="dynamodb:table:WriteCapacityUnits",
+    )
+
+    logging.info(f"Deregistered DynamoDB table {table_name} as scalable target")
+
+    return table_name
 
 def service_cleanup(config: dict):
     logging.getLogger().setLevel(logging.INFO)
@@ -81,6 +104,7 @@ def service_cleanup(config: dict):
         logging.exception(
             f"Unable to delete data bucket {resources.SageMakerDataBucketName}"
         )
+        pass
 
     try:
         delete_execution_role(resources.SageMakerExecutionRoleARN)
@@ -88,6 +112,7 @@ def service_cleanup(config: dict):
         logging.exception(
             f"Unable to delete execution role {resources.SageMakerExecutionRoleARN}"
         )
+        pass
 
     try:
         delete_dynamodb_table(resources.ScalableDynamoTableName)
@@ -95,6 +120,15 @@ def service_cleanup(config: dict):
         logging.exception(
             f"Unable to delete DynamoDB table {resources.ScalableDynamoTableName}"
         )
+        pass
+
+    try:
+        deregister_scalable_dynamodb_table(resources.RegisteredDynamoTableName)
+    except:
+        logging.exception(
+            f"Unable to deregister scalable target {resources.RegisteredDynamoTableName}"
+        )
+        pass
 
     try:
         delete_dynamodb_table(resources.RegisteredDynamoTableName)
