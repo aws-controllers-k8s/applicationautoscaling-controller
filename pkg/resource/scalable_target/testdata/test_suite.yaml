@@ -5,7 +5,7 @@ tests:
      - name: "Put=InvalidInput"
        description: "Given one of the parameters is invalid, ko.Status shows a terminal condition"
        given:
-         desired_state: "scalable_target/v1alpha1/st_invalid_before_register.yaml"
+         desired_state: "scalable_target/v1alpha1/st_invalid_before_create.yaml"
          svc_api:
            - operation: RegisterScalableTargetWithContext
              error:
@@ -13,5 +13,5 @@ tests:
                message: "The service namespace must be one of the following: appstream | cassandra | comprehend | custom-resource | dynamodb | ec2 | ecs | elasticmapreduce | kafka | lambda | rds | sagemaker."
        invoke: Create
        expect:
-         latest_state: "scalable_target/v1alpha1/st_invalid_register_attempted.yaml"
+         latest_state: "scalable_target/v1alpha1/st_invalid_create_attempted.yaml"
          error: "InvalidParameterValue: The service namespace must be one of the following: appstream | cassandra | comprehend | custom-resource | dynamodb | ec2 | ecs | elasticmapreduce | kafka | lambda | rds | sagemaker.\n\tstatus code: 0, request id: "
