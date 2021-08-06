@@ -1,0 +1,20 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  creationTimestamp: null
+  name: unit-testing-scalable-target
+spec:
+  maxCapacity: 2
+  minCapacity: 1
+  resourceID: endpoint/unit-testing-endpoint/variant/variant-1
+  scalableDimension: sagemaker:variant:DesiredInstanceCount
+  serviceNamespace: ""
+status:
+  ackResourceMetadata:
+    ownerAccountID: ""
+  conditions:
+  - message: 'The service namespace must be one of the following: appstream | cassandra
+      | comprehend | custom-resource | dynamodb | ec2 | ecs | elasticmapreduce | kafka
+      | lambda | rds | sagemaker.'
+    status: "True"
+    type: ACK.Recoverable
