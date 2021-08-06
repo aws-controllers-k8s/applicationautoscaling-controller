@@ -69,7 +69,7 @@ func (runner *TestSuiteRunner) RunTests() {
 	for _, test := range runner.TestSuite.Tests {
 		fmt.Printf("Starting test: %s\n", test.Name)
 		for _, scenario := range test.Scenarios {
-			runner.startScenario(scenario)
+		    runner.startScenario(scenario)
 		}
 		fmt.Printf("Test: %s completed.\n", test.Name)
 	}
@@ -79,39 +79,39 @@ func (runner *TestSuiteRunner) RunTests() {
 func (runner *TestSuiteRunner) startScenario (scenario TestScenario) {
      t := runner.Delegate.GoTestRunner()
      t.Run(scenario.Name, func(t *testing.T) {
-     	defer func() {
-   	      if r := recover(); r != nil {
-     	            fmt.Println(RecoverPanicString, r)
-		    t.Fail()
-     	      }
-        }()
-     	fmt.Printf("Running test scenario: %s\n", scenario.Name)
-     	fixtureCxt := runner.setupFixtureContext(&scenario.Fixture)
-     	runner.runTestScenario(t, scenario.Name, fixtureCxt, scenario.UnitUnderTest, &scenario.Expect)
+       defer func() {
+          if r := recover(); r != nil {
+	     fmt.Println(RecoverPanicString, r)
+	     t.Fail()
+	  }
+       }()
+       fmt.Printf("Running test scenario: %s\n", scenario.Name)
+       fixtureCxt := runner.setupFixtureContext(&scenario.Fixture)
+       runner.runTestScenario(t, scenario.Name, fixtureCxt, scenario.UnitUnderTest, &scenario.Expect)
      })
 }
 
 // runTestScenario runs given test scenario which is expressed as: given fixture context, unit to test, expected fixture context.
 func (runner *TestSuiteRunner) runTestScenario(t *testing.T, scenarioName string, fixtureCxt *fixtureContext, unitUnderTest string, expectation *Expect) {
-     rm := fixtureCxt.resourceManager
-     assert := assert.New(t)
+	rm := fixtureCxt.resourceManager
+	assert := assert.New(t)
 
-     var actual acktypes.AWSResource = nil
-     var err error = nil
-     switch unitUnderTest {
-     case "ReadOne":
-     	  actual, err = rm.ReadOne(context.Background(), fixtureCxt.desired)
-     case "Create":
-     	  actual, err = rm.Create(context.Background(), fixtureCxt.desired)
-     case "Update":
-     	  delta := runner.Delegate.ResourceDescriptor().Delta(fixtureCxt.desired, fixtureCxt.latest)
-     	  actual, err = rm.Update(context.Background(), fixtureCxt.desired, fixtureCxt.latest, delta)
-     case "Delete":
-     	  actual, err = rm.Delete(context.Background(), fixtureCxt.desired)
-     default:
-	panic(errors.New(fmt.Sprintf("unit under test: %s not supported", unitUnderTest)))
-     }
-     runner.assertExpectations(assert, expectation, actual, err)
+	var actual acktypes.AWSResource = nil
+	var err error = nil
+	switch unitUnderTest {
+	case "ReadOne":
+		actual, err = rm.ReadOne(context.Background(), fixtureCxt.desired)
+	case "Create":
+		actual, err = rm.Create(context.Background(), fixtureCxt.desired)
+	case "Update":
+		delta := runner.Delegate.ResourceDescriptor().Delta(fixtureCxt.desired, fixtureCxt.latest)
+		actual, err = rm.Update(context.Background(), fixtureCxt.desired, fixtureCxt.latest, delta)
+	case "Delete":
+		actual, err = rm.Delete(context.Background(), fixtureCxt.desired)
+	default:
+		panic(errors.New(fmt.Sprintf("unit under test: %s not supported", unitUnderTest)))
+	}
+	runner.assertExpectations(assert, expectation, actual, err)
 }
 
 /* assertExpectations validates the actual outcome against the expected outcome.
