@@ -1,0 +1,24 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  creationTimestamp: null
+  name: unit-testing-scaling-policy
+spec:
+  policyName: ""
+  policyType: TargetTrackingScaling
+  resourceID: endpoint/unit-testing-endpoint/variant/variant-1
+  scalableDimension: sagemaker:variant:DesiredInstanceCount
+  serviceNamespace: sagemaker
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: SageMakerVariantInvocationsPerInstance
+    scaleInCooldown: 700
+    scaleOutCooldown: 300
+    targetValue: 60
+status:
+  ackResourceMetadata:
+    ownerAccountID: ""
+  conditions:
+  - message: The policy name must start with an alphanumeric character.
+    status: "True"
+    type: ACK.Recoverable
