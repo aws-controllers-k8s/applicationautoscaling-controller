@@ -17,7 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	mocksvcsdkapi "github.com/aws-controllers-k8s/applicationautoscaling-controller/mocks/aws-sdk-go/applicationautoscaling"
+	mocksvcsdkapi "github.com/aws-controllers-k8s/applicationautoscaling-controller/test/mocks/aws-sdk-go/applicationautoscaling"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -107,7 +107,7 @@ func (runner *TestSuiteRunner) runTestScenario(t *testing.T, scenarioName string
 		delta := runner.Delegate.ResourceDescriptor().Delta(fixtureCxt.desired, fixtureCxt.latest)
 		actual, err = rm.Update(context.Background(), fixtureCxt.desired, fixtureCxt.latest, delta)
 	case "Delete":
-		actual, err = rm.Delete(context.Background(), fixtureCxt.desired)
+		err = rm.Delete(context.Background(), fixtureCxt.desired)
 	default:
 		panic(errors.New(fmt.Sprintf("unit under test: %s not supported", unitUnderTest)))
 	}
