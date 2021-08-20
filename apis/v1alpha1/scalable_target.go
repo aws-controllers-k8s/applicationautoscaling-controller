@@ -20,7 +20,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ScalableTargetSpec defines the desired state of ScalableTarget
+// ScalableTargetSpec defines the desired state of ScalableTarget.
+//
+// Represents a scalable target.
 type ScalableTargetSpec struct {
 	// The maximum value that you plan to scale out to. When a scaling policy is
 	// in effect, Application Auto Scaling can scale out (expand) as needed to the
@@ -189,11 +191,13 @@ type ScalableTargetStatus struct {
 	// All CRs managed by ACK have a common `Status.ACKResourceMetadata` member
 	// that is used to contain resource sync state, account ownership,
 	// constructed ARN for the resource
+	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
 	// All CRS managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource
+	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
 }
 
