@@ -17,38 +17,38 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/testutil"
 	mocksvcsdkapi "github.com/aws-controllers-k8s/applicationautoscaling-controller/test/mocks/aws-sdk-go/applicationautoscaling"
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
-	"github.com/ghodss/yaml"
-	"github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/testutil"
+	ackmetrics "github.com/aws-controllers-k8s/runtime/pkg/metrics"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
 	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	"github.com/ghodss/yaml"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"path/filepath"
-	"testing"
-	ctrlrtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
-	ackmetrics "github.com/aws-controllers-k8s/runtime/pkg/metrics"
 	"go.uber.org/zap/zapcore"
+	"path/filepath"
+	ctrlrtzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"testing"
 )
 
 // provideResourceManagerWithMockSDKAPI accepts MockApplicationAutoScalingAPI and returns pointer to resourceManager
 // the returned resourceManager is configured to use mockapi api.
 func provideResourceManagerWithMockSDKAPI(mockApplicationAutoScalingAPI *mocksvcsdkapi.ApplicationAutoScalingAPI) *resourceManager {
-     zapOptions := ctrlrtzap.Options{
-     	    Development: true,
-	    Level:       zapcore.InfoLevel,
-     }
-     fakeLogger := ctrlrtzap.New(ctrlrtzap.UseFlagOptions(&zapOptions))
-     return &resourceManager{
-     	    rr:           nil,
-	    awsAccountID: "",
-	    awsRegion:    "",
-	    sess:         nil,
-	    sdkapi:       mockApplicationAutoScalingAPI,
-	    log:          fakeLogger,
-	    metrics:      ackmetrics.NewMetrics("applicationautoscaling"),
-     }
+	zapOptions := ctrlrtzap.Options{
+		Development: true,
+		Level:       zapcore.InfoLevel,
+	}
+	fakeLogger := ctrlrtzap.New(ctrlrtzap.UseFlagOptions(&zapOptions))
+	return &resourceManager{
+		rr:           nil,
+		awsAccountID: "",
+		awsRegion:    "",
+		sess:         nil,
+		sdkapi:       mockApplicationAutoScalingAPI,
+		log:          fakeLogger,
+		metrics:      ackmetrics.NewMetrics("applicationautoscaling"),
+	}
 }
 
 // TestScalableTargetTestSuite runs the test suite for scalable target
