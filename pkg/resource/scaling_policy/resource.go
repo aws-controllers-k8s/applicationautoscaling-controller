@@ -74,17 +74,40 @@ func (r *resource) Conditions() []*ackv1alpha1.Condition {
 	return r.ko.Status.Conditions
 }
 
+// ReplaceConditions sets the Conditions status field for the resource
+func (r *resource) ReplaceConditions(conditions []*ackv1alpha1.Condition) {
+	r.ko.Status.Conditions = conditions
+}
+
 // SetObjectMeta sets the ObjectMeta field for the resource
 func (r *resource) SetObjectMeta(meta metav1.ObjectMeta) {
 	r.ko.ObjectMeta = meta
 }
 
+// SetStatus will set the Status field for the resource
+func (r *resource) SetStatus(desired acktypes.AWSResource) {
+	r.ko.Status = desired.(*resource).ko.Status
+}
+
 // SetIdentifiers sets the Spec or Status field that is referenced as the unique
 // resource identifier
 func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error {
-	if identifier.NameOrID == nil {
+	if identifier.NameOrID == "" {
 		return ackerrors.MissingNameIdentifier
 	}
-	r.ko.Spec.ResourceID = identifier.NameOrID
+
+	f0, f0ok := identifier.AdditionalKeys["resourceID"]
+	if f0ok {
+		r.ko.Spec.ResourceID = &f0
+	}
+	f1, f1ok := identifier.AdditionalKeys["scalableDimension"]
+	if f1ok {
+		r.ko.Spec.ScalableDimension = &f1
+	}
+	f2, f2ok := identifier.AdditionalKeys["serviceNamespace"]
+	if f2ok {
+		r.ko.Spec.ServiceNamespace = &f2
+	}
+
 	return nil
 }

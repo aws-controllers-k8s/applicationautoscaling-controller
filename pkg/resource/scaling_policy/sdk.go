@@ -22,6 +22,7 @@ import (
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
+	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	corev1 "k8s.io/api/core/v1"
@@ -45,19 +46,29 @@ var (
 func (rm *resourceManager) sdkFind(
 	ctx context.Context,
 	r *resource,
-) (*resource, error) {
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkFind")
+	defer exit(err)
+	// If any required fields in the input shape are missing, AWS resource is
+	// not created yet. Return NotFound here to indicate to callers that the
+	// resource isn't yet created.
+	if rm.requiredFieldsMissingFromReadManyInput(r) {
+		return nil, ackerr.NotFound
+	}
+
 	input, err := rm.newListRequestPayload(r)
 	if err != nil {
 		return nil, err
 	}
-
-	resp, respErr := rm.sdkapi.DescribeScalingPoliciesWithContext(ctx, input)
-	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalingPolicies", respErr)
-	if respErr != nil {
-		if awsErr, ok := ackerr.AWSError(respErr); ok && awsErr.Code() == "UNKNOWN" {
+	var resp *svcsdk.DescribeScalingPoliciesOutput
+	resp, err = rm.sdkapi.DescribeScalingPoliciesWithContext(ctx, input)
+	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalingPolicies", err)
+	if err != nil {
+		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
-		return nil, respErr
+		return nil, err
 	}
 
 	// Merge in the information we read from the API call above to the copy of
@@ -215,8 +226,16 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
-
 	return &resource{ko}, nil
+}
+
+// requiredFieldsMissingFromReadManyInput returns true if there are any fields
+// for the ReadMany Input shape that are required but not present in the
+// resource's Spec or Status
+func (rm *resourceManager) requiredFieldsMissingFromReadManyInput(
+	r *resource,
+) bool {
+	return false
 }
 
 // newListRequestPayload returns SDK-specific struct for the HTTP request
@@ -240,24 +259,30 @@ func (rm *resourceManager) newListRequestPayload(
 }
 
 // sdkCreate creates the supplied resource in the backend AWS service API and
-// returns a new resource with any fields in the Status field filled in
+// returns a copy of the resource with resource fields (in both Spec and
+// Status) filled in with values from the CREATE API operation's Output shape.
 func (rm *resourceManager) sdkCreate(
 	ctx context.Context,
-	r *resource,
-) (*resource, error) {
-	input, err := rm.newCreateRequestPayload(ctx, r)
+	desired *resource,
+) (created *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkCreate")
+	defer exit(err)
+	input, err := rm.newCreateRequestPayload(ctx, desired)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, respErr := rm.sdkapi.PutScalingPolicyWithContext(ctx, input)
-	rm.metrics.RecordAPICall("CREATE", "PutScalingPolicy", respErr)
-	if respErr != nil {
-		return nil, respErr
+	var resp *svcsdk.PutScalingPolicyOutput
+	_ = resp
+	resp, err = rm.sdkapi.PutScalingPolicyWithContext(ctx, input)
+	rm.metrics.RecordAPICall("CREATE", "PutScalingPolicy", err)
+	if err != nil {
+		return nil, err
 	}
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
-	ko := r.ko.DeepCopy()
+	ko := desired.ko.DeepCopy()
 
 	if resp.Alarms != nil {
 		f0 := []*svcapitypes.Alarm{}
@@ -284,7 +309,6 @@ func (rm *resourceManager) sdkCreate(
 	}
 
 	rm.setStatusDefaults(ko)
-
 	return &resource{ko}, nil
 }
 
@@ -411,24 +435,187 @@ func (rm *resourceManager) sdkUpdate(
 	desired *resource,
 	latest *resource,
 	delta *ackcompare.Delta,
-) (*resource, error) {
-	// TODO(jaypipes): Figure this out...
-	return nil, ackerr.NotImplemented
+) (updated *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkUpdate")
+	defer exit(err)
+	input, err := rm.newUpdateRequestPayload(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp *svcsdk.PutScalingPolicyOutput
+	_ = resp
+	resp, err = rm.sdkapi.PutScalingPolicyWithContext(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "PutScalingPolicy", err)
+	if err != nil {
+		return nil, err
+	}
+	// Merge in the information we read from the API call above to the copy of
+	// the original Kubernetes object we passed to the function
+	ko := desired.ko.DeepCopy()
+
+	if resp.Alarms != nil {
+		f0 := []*svcapitypes.Alarm{}
+		for _, f0iter := range resp.Alarms {
+			f0elem := &svcapitypes.Alarm{}
+			if f0iter.AlarmARN != nil {
+				f0elem.AlarmARN = f0iter.AlarmARN
+			}
+			if f0iter.AlarmName != nil {
+				f0elem.AlarmName = f0iter.AlarmName
+			}
+			f0 = append(f0, f0elem)
+		}
+		ko.Status.Alarms = f0
+	} else {
+		ko.Status.Alarms = nil
+	}
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.PolicyARN != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.PolicyARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
+	}
+
+	rm.setStatusDefaults(ko)
+	return &resource{ko}, nil
+}
+
+// newUpdateRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Update API call for the resource
+func (rm *resourceManager) newUpdateRequestPayload(
+	ctx context.Context,
+	r *resource,
+) (*svcsdk.PutScalingPolicyInput, error) {
+	res := &svcsdk.PutScalingPolicyInput{}
+
+	if r.ko.Spec.PolicyName != nil {
+		res.SetPolicyName(*r.ko.Spec.PolicyName)
+	}
+	if r.ko.Spec.PolicyType != nil {
+		res.SetPolicyType(*r.ko.Spec.PolicyType)
+	}
+	if r.ko.Spec.ResourceID != nil {
+		res.SetResourceId(*r.ko.Spec.ResourceID)
+	}
+	if r.ko.Spec.ScalableDimension != nil {
+		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+	}
+	if r.ko.Spec.ServiceNamespace != nil {
+		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+	}
+	if r.ko.Spec.StepScalingPolicyConfiguration != nil {
+		f5 := &svcsdk.StepScalingPolicyConfiguration{}
+		if r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType != nil {
+			f5.SetAdjustmentType(*r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.Cooldown != nil {
+			f5.SetCooldown(*r.ko.Spec.StepScalingPolicyConfiguration.Cooldown)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType != nil {
+			f5.SetMetricAggregationType(*r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude != nil {
+			f5.SetMinAdjustmentMagnitude(*r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments != nil {
+			f5f4 := []*svcsdk.StepAdjustment{}
+			for _, f5f4iter := range r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments {
+				f5f4elem := &svcsdk.StepAdjustment{}
+				if f5f4iter.MetricIntervalLowerBound != nil {
+					f5f4elem.SetMetricIntervalLowerBound(*f5f4iter.MetricIntervalLowerBound)
+				}
+				if f5f4iter.MetricIntervalUpperBound != nil {
+					f5f4elem.SetMetricIntervalUpperBound(*f5f4iter.MetricIntervalUpperBound)
+				}
+				if f5f4iter.ScalingAdjustment != nil {
+					f5f4elem.SetScalingAdjustment(*f5f4iter.ScalingAdjustment)
+				}
+				f5f4 = append(f5f4, f5f4elem)
+			}
+			f5.SetStepAdjustments(f5f4)
+		}
+		res.SetStepScalingPolicyConfiguration(f5)
+	}
+	if r.ko.Spec.TargetTrackingScalingPolicyConfiguration != nil {
+		f6 := &svcsdk.TargetTrackingScalingPolicyConfiguration{}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
+			f6f0 := &svcsdk.CustomizedMetricSpecification{}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions != nil {
+				f6f0f0 := []*svcsdk.MetricDimension{}
+				for _, f6f0f0iter := range r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions {
+					f6f0f0elem := &svcsdk.MetricDimension{}
+					if f6f0f0iter.Name != nil {
+						f6f0f0elem.SetName(*f6f0f0iter.Name)
+					}
+					if f6f0f0iter.Value != nil {
+						f6f0f0elem.SetValue(*f6f0f0iter.Value)
+					}
+					f6f0f0 = append(f6f0f0, f6f0f0elem)
+				}
+				f6f0.SetDimensions(f6f0f0)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
+				f6f0.SetMetricName(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
+				f6f0.SetNamespace(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic != nil {
+				f6f0.SetStatistic(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit != nil {
+				f6f0.SetUnit(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit)
+			}
+			f6.SetCustomizedMetricSpecification(f6f0)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn != nil {
+			f6.SetDisableScaleIn(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification != nil {
+			f6f2 := &svcsdk.PredefinedMetricSpecification{}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType != nil {
+				f6f2.SetPredefinedMetricType(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel != nil {
+				f6f2.SetResourceLabel(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel)
+			}
+			f6.SetPredefinedMetricSpecification(f6f2)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown != nil {
+			f6.SetScaleInCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown != nil {
+			f6.SetScaleOutCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue != nil {
+			f6.SetTargetValue(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue)
+		}
+		res.SetTargetTrackingScalingPolicyConfiguration(f6)
+	}
+
+	return res, nil
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
 func (rm *resourceManager) sdkDelete(
 	ctx context.Context,
 	r *resource,
-) error {
-
+) (latest *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkDelete")
+	defer exit(err)
 	input, err := rm.newDeleteRequestPayload(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, respErr := rm.sdkapi.DeleteScalingPolicyWithContext(ctx, input)
-	rm.metrics.RecordAPICall("DELETE", "DeleteScalingPolicy", respErr)
-	return respErr
+	var resp *svcsdk.DeleteScalingPolicyOutput
+	_ = resp
+	resp, err = rm.sdkapi.DeleteScalingPolicyWithContext(ctx, input)
+	rm.metrics.RecordAPICall("DELETE", "DeleteScalingPolicy", err)
+	return nil, err
 }
 
 // newDeleteRequestPayload returns an SDK-specific struct for the HTTP request
@@ -473,6 +660,7 @@ func (rm *resourceManager) setStatusDefaults(
 // else it returns nil, false
 func (rm *resourceManager) updateConditions(
 	r *resource,
+	onSuccess bool,
 	err error,
 ) (*resource, bool) {
 	ko := r.ko.DeepCopy()
@@ -481,6 +669,7 @@ func (rm *resourceManager) updateConditions(
 	// Terminal condition
 	var terminalCondition *ackv1alpha1.Condition = nil
 	var recoverableCondition *ackv1alpha1.Condition = nil
+	var syncCondition *ackv1alpha1.Condition = nil
 	for _, condition := range ko.Status.Conditions {
 		if condition.Type == ackv1alpha1.ConditionTypeTerminal {
 			terminalCondition = condition
@@ -488,18 +677,26 @@ func (rm *resourceManager) updateConditions(
 		if condition.Type == ackv1alpha1.ConditionTypeRecoverable {
 			recoverableCondition = condition
 		}
+		if condition.Type == ackv1alpha1.ConditionTypeResourceSynced {
+			syncCondition = condition
+		}
 	}
 
-	if rm.terminalAWSError(err) {
+	if rm.terminalAWSError(err) || err == ackerr.SecretTypeNotSupported || err == ackerr.SecretNotFound {
 		if terminalCondition == nil {
 			terminalCondition = &ackv1alpha1.Condition{
 				Type: ackv1alpha1.ConditionTypeTerminal,
 			}
 			ko.Status.Conditions = append(ko.Status.Conditions, terminalCondition)
 		}
+		var errorMessage = ""
+		if err == ackerr.SecretTypeNotSupported || err == ackerr.SecretNotFound {
+			errorMessage = err.Error()
+		} else {
+			awsErr, _ := ackerr.AWSError(err)
+			errorMessage = awsErr.Message()
+		}
 		terminalCondition.Status = corev1.ConditionTrue
-		awsErr, _ := ackerr.AWSError(err)
-		errorMessage := awsErr.Message()
 		terminalCondition.Message = &errorMessage
 	} else {
 		// Clear the terminal condition if no longer present
@@ -528,7 +725,9 @@ func (rm *resourceManager) updateConditions(
 			recoverableCondition.Message = nil
 		}
 	}
-	if terminalCondition != nil || recoverableCondition != nil {
+	// Required to avoid the "declared but not used" error in the default case
+	_ = syncCondition
+	if terminalCondition != nil || recoverableCondition != nil || syncCondition != nil {
 		return &resource{ko}, true // updated
 	}
 	return nil, false // not updated

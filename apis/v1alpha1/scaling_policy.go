@@ -20,7 +20,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ScalingPolicySpec defines the desired state of ScalingPolicy
+// ScalingPolicySpec defines the desired state of ScalingPolicy.
+//
+// Represents a scaling policy to use with Application Auto Scaling.
+//
+// For more information about configuring scaling policies for a specific service,
+// see Getting started with Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/getting-started.html)
+// in the Application Auto Scaling User Guide.
 type ScalingPolicySpec struct {
 	// The name of the scaling policy.
 	// +kubebuilder:validation:Required
@@ -167,13 +173,16 @@ type ScalingPolicyStatus struct {
 	// All CRs managed by ACK have a common `Status.ACKResourceMetadata` member
 	// that is used to contain resource sync state, account ownership,
 	// constructed ARN for the resource
+	// +kubebuilder:validation:Optional
 	ACKResourceMetadata *ackv1alpha1.ResourceMetadata `json:"ackResourceMetadata"`
 	// All CRS managed by ACK have a common `Status.Conditions` member that
 	// contains a collection of `ackv1alpha1.Condition` objects that describe
 	// the various terminal states of the CR and its backend AWS service API
 	// resource
+	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
 	// The CloudWatch alarms created for the target tracking scaling policy.
+	// +kubebuilder:validation:Optional
 	Alarms []*Alarm `json:"alarms,omitempty"`
 }
 
