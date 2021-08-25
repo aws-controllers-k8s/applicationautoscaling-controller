@@ -3,8 +3,8 @@ module github.com/aws-controllers-k8s/applicationautoscaling-controller
 go 1.14
 
 require (
-	github.com/aws-controllers-k8s/runtime v0.2.1
-	github.com/aws/aws-sdk-go v1.37.4
+	github.com/aws-controllers-k8s/runtime v0.12.0
+	github.com/aws/aws-sdk-go v1.37.10
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.1.0
 	github.com/google/go-cmp v0.3.1

@@ -16,7 +16,14 @@
 package scaling_policy
 
 import (
+	"reflect"
+
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
+)
+
+// Hack to avoid import errors during build...
+var (
+	_ = &reflect.Method{}
 )
 
 // newResourceDelta returns a new `ackcompare.Delta` used to compare two
@@ -98,7 +105,9 @@ func newResourceDelta(
 				delta.Add("Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude", a.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude, b.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
 			}
 		}
-
+		if !reflect.DeepEqual(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
+			delta.Add("Spec.StepScalingPolicyConfiguration.StepAdjustments", a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments)
+		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration, b.ko.Spec.TargetTrackingScalingPolicyConfiguration) {
 		delta.Add("Spec.TargetTrackingScalingPolicyConfiguration", a.ko.Spec.TargetTrackingScalingPolicyConfiguration, b.ko.Spec.TargetTrackingScalingPolicyConfiguration)
@@ -106,7 +115,9 @@ func newResourceDelta(
 		if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification) {
 			delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification)
 		} else if a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil && b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
-
+			if !reflect.DeepEqual(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
+				delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions)
+			}
 			if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName) {
 				delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
 			} else if a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil && b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
