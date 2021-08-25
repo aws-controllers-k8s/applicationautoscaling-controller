@@ -4,7 +4,7 @@
 
 image:
   repository: public.ecr.aws/aws-controllers-k8s/applicationautoscaling-controller
-  tag: v0.0.1
+  tag: v0.0.1-master
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -41,8 +41,8 @@ aws:
 
 # log level for the controller
 log:
-  enable_development_logging: false
-  level: info
+  enable_development_logging: true
+  level: debug
 
 # Set to "namespace" to install the controller in a namespaced scope, will only
 # watch for object creation in the namespace. By default installScope is
