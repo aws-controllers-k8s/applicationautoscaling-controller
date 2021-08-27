@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.1
   creationTimestamp: null
   name: scalingpolicies.applicationautoscaling.services.k8s.aws
 spec:
@@ -34,7 +34,11 @@ spec:
           metadata:
             type: object
           spec:
-            description: ScalingPolicySpec defines the desired state of ScalingPolicy
+            description: "ScalingPolicySpec defines the desired state of ScalingPolicy.
+              \n Represents a scaling policy to use with Application Auto Scaling.
+              \n For more information about configuring scaling policies for a specific
+              service, see Getting started with Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/getting-started.html)
+              in the Application Auto Scaling User Guide."
             properties:
               policyName:
                 description: The name of the scaling policy.
@@ -325,9 +329,6 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - ackResourceMetadata
-            - conditions
             type: object
         type: object
     served: true
