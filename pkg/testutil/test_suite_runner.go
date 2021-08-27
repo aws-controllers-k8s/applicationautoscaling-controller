@@ -54,7 +54,7 @@ type expectContext struct {
 type TestRunnerDelegate interface {
 	ResourceDescriptor() acktypes.AWSResourceDescriptor
 	Equal(desired acktypes.AWSResource, latest acktypes.AWSResource) bool // remove it when ResourceDescriptor.Delta() is available
-	YamlEqual(expected string, actual acktypes.AWSResource) bool // new
+	YamlEqual(expected string, actual acktypes.AWSResource) bool          // new
 	ResourceManager(*mocksvcsdkapi.ApplicationAutoScalingAPI) acktypes.AWSResourceManager
 	EmptyServiceAPIOutput(apiName string) (interface{}, error)
 	GoTestRunner() *testing.T
@@ -69,26 +69,26 @@ func (runner *TestSuiteRunner) RunTests() {
 	for _, test := range runner.TestSuite.Tests {
 		fmt.Printf("Starting test: %s\n", test.Name)
 		for _, scenario := range test.Scenarios {
-		    runner.startScenario(scenario)
+			runner.startScenario(scenario)
 		}
 		fmt.Printf("Test: %s completed.\n", test.Name)
 	}
 }
 
 // Wrapper for running test scenarios that catches any panics thrown.
-func (runner *TestSuiteRunner) startScenario (scenario TestScenario) {
-     t := runner.Delegate.GoTestRunner()
-     t.Run(scenario.Name, func(t *testing.T) {
-       defer func() {
-          if r := recover(); r != nil {
-	     fmt.Println(RecoverPanicString, r)
-	     t.Fail()
-	  }
-       }()
-       fmt.Printf("Running test scenario: %s\n", scenario.Name)
-       fixtureCxt := runner.setupFixtureContext(&scenario.Fixture)
-       runner.runTestScenario(t, scenario.Name, fixtureCxt, scenario.UnitUnderTest, &scenario.Expect)
-     })
+func (runner *TestSuiteRunner) startScenario(scenario TestScenario) {
+	t := runner.Delegate.GoTestRunner()
+	t.Run(scenario.Name, func(t *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(RecoverPanicString, r)
+				t.Fail()
+			}
+		}()
+		fmt.Printf("Running test scenario: %s\n", scenario.Name)
+		fixtureCxt := runner.setupFixtureContext(&scenario.Fixture)
+		runner.runTestScenario(t, scenario.Name, fixtureCxt, scenario.UnitUnderTest, &scenario.Expect)
+	})
 }
 
 // runTestScenario runs given test scenario which is expressed as: given fixture context, unit to test, expected fixture context.
@@ -107,7 +107,7 @@ func (runner *TestSuiteRunner) runTestScenario(t *testing.T, scenarioName string
 		delta := runner.Delegate.ResourceDescriptor().Delta(fixtureCxt.desired, fixtureCxt.latest)
 		actual, err = rm.Update(context.Background(), fixtureCxt.desired, fixtureCxt.latest, delta)
 	case "Delete":
-		err = rm.Delete(context.Background(), fixtureCxt.desired)
+		actual, err = rm.Delete(context.Background(), fixtureCxt.desired)
 	default:
 		panic(errors.New(fmt.Sprintf("unit under test: %s not supported", unitUnderTest)))
 	}
@@ -194,8 +194,8 @@ func (runner *TestSuiteRunner) setupFixtureContext(fixture *Fixture) *fixtureCon
 					panic(err)
 				}
 			} else if serviceApi.ServiceAPIError == nil && serviceApi.Output == "" {
-			        // Default case for no defined output fixture or error.
-			        mocksdkapi.On(serviceApi.Operation, mock.Anything, mock.Anything).Return(nil, nil)
+				// Default case for no defined output fixture or error.
+				mocksdkapi.On(serviceApi.Operation, mock.Anything, mock.Anything).Return(nil, nil)
 			}
 		}
 	}

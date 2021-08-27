@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.1
   creationTimestamp: null
   name: scalabletargets.applicationautoscaling.services.k8s.aws
 spec:
@@ -34,7 +34,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: ScalableTargetSpec defines the desired state of ScalableTarget
+            description: "ScalableTargetSpec defines the desired state of ScalableTarget.
+              \n Represents a scalable target."
             properties:
               maxCapacity:
                 description: "The maximum value that you plan to scale out to. When
@@ -237,9 +238,6 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - ackResourceMetadata
-            - conditions
             type: object
         type: object
     served: true
