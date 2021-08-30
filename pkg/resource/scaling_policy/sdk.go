@@ -435,9 +435,168 @@ func (rm *resourceManager) sdkUpdate(
 	desired *resource,
 	latest *resource,
 	delta *ackcompare.Delta,
-) (*resource, error) {
-	// TODO(jaypipes): Figure this out...
-	return nil, ackerr.NotImplemented
+) (updated *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkUpdate")
+	defer exit(err)
+	input, err := rm.newUpdateRequestPayload(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp *svcsdk.PutScalingPolicyOutput
+	_ = resp
+	resp, err = rm.sdkapi.PutScalingPolicyWithContext(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "PutScalingPolicy", err)
+	if err != nil {
+		return nil, err
+	}
+	// Merge in the information we read from the API call above to the copy of
+	// the original Kubernetes object we passed to the function
+	ko := desired.ko.DeepCopy()
+
+	if resp.Alarms != nil {
+		f0 := []*svcapitypes.Alarm{}
+		for _, f0iter := range resp.Alarms {
+			f0elem := &svcapitypes.Alarm{}
+			if f0iter.AlarmARN != nil {
+				f0elem.AlarmARN = f0iter.AlarmARN
+			}
+			if f0iter.AlarmName != nil {
+				f0elem.AlarmName = f0iter.AlarmName
+			}
+			f0 = append(f0, f0elem)
+		}
+		ko.Status.Alarms = f0
+	} else {
+		ko.Status.Alarms = nil
+	}
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.PolicyARN != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.PolicyARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
+	}
+
+	rm.setStatusDefaults(ko)
+	return &resource{ko}, nil
+}
+
+// newUpdateRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Update API call for the resource
+func (rm *resourceManager) newUpdateRequestPayload(
+	ctx context.Context,
+	r *resource,
+) (*svcsdk.PutScalingPolicyInput, error) {
+	res := &svcsdk.PutScalingPolicyInput{}
+
+	if r.ko.Spec.PolicyName != nil {
+		res.SetPolicyName(*r.ko.Spec.PolicyName)
+	}
+	if r.ko.Spec.PolicyType != nil {
+		res.SetPolicyType(*r.ko.Spec.PolicyType)
+	}
+	if r.ko.Spec.ResourceID != nil {
+		res.SetResourceId(*r.ko.Spec.ResourceID)
+	}
+	if r.ko.Spec.ScalableDimension != nil {
+		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+	}
+	if r.ko.Spec.ServiceNamespace != nil {
+		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+	}
+	if r.ko.Spec.StepScalingPolicyConfiguration != nil {
+		f5 := &svcsdk.StepScalingPolicyConfiguration{}
+		if r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType != nil {
+			f5.SetAdjustmentType(*r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.Cooldown != nil {
+			f5.SetCooldown(*r.ko.Spec.StepScalingPolicyConfiguration.Cooldown)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType != nil {
+			f5.SetMetricAggregationType(*r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude != nil {
+			f5.SetMinAdjustmentMagnitude(*r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
+		}
+		if r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments != nil {
+			f5f4 := []*svcsdk.StepAdjustment{}
+			for _, f5f4iter := range r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments {
+				f5f4elem := &svcsdk.StepAdjustment{}
+				if f5f4iter.MetricIntervalLowerBound != nil {
+					f5f4elem.SetMetricIntervalLowerBound(*f5f4iter.MetricIntervalLowerBound)
+				}
+				if f5f4iter.MetricIntervalUpperBound != nil {
+					f5f4elem.SetMetricIntervalUpperBound(*f5f4iter.MetricIntervalUpperBound)
+				}
+				if f5f4iter.ScalingAdjustment != nil {
+					f5f4elem.SetScalingAdjustment(*f5f4iter.ScalingAdjustment)
+				}
+				f5f4 = append(f5f4, f5f4elem)
+			}
+			f5.SetStepAdjustments(f5f4)
+		}
+		res.SetStepScalingPolicyConfiguration(f5)
+	}
+	if r.ko.Spec.TargetTrackingScalingPolicyConfiguration != nil {
+		f6 := &svcsdk.TargetTrackingScalingPolicyConfiguration{}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
+			f6f0 := &svcsdk.CustomizedMetricSpecification{}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions != nil {
+				f6f0f0 := []*svcsdk.MetricDimension{}
+				for _, f6f0f0iter := range r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions {
+					f6f0f0elem := &svcsdk.MetricDimension{}
+					if f6f0f0iter.Name != nil {
+						f6f0f0elem.SetName(*f6f0f0iter.Name)
+					}
+					if f6f0f0iter.Value != nil {
+						f6f0f0elem.SetValue(*f6f0f0iter.Value)
+					}
+					f6f0f0 = append(f6f0f0, f6f0f0elem)
+				}
+				f6f0.SetDimensions(f6f0f0)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
+				f6f0.SetMetricName(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
+				f6f0.SetNamespace(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic != nil {
+				f6f0.SetStatistic(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit != nil {
+				f6f0.SetUnit(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit)
+			}
+			f6.SetCustomizedMetricSpecification(f6f0)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn != nil {
+			f6.SetDisableScaleIn(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification != nil {
+			f6f2 := &svcsdk.PredefinedMetricSpecification{}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType != nil {
+				f6f2.SetPredefinedMetricType(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel != nil {
+				f6f2.SetResourceLabel(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel)
+			}
+			f6.SetPredefinedMetricSpecification(f6f2)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown != nil {
+			f6.SetScaleInCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown != nil {
+			f6.SetScaleOutCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown)
+		}
+		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue != nil {
+			f6.SetTargetValue(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue)
+		}
+		res.SetTargetTrackingScalingPolicyConfiguration(f6)
+	}
+
+	return res, nil
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API

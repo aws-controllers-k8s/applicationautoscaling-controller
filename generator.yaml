@@ -1,12 +1,17 @@
 operations:
   PutScalingPolicy:
-    operation_type: Create
+    operation_type: 
+     - Create
+     - Update
     resource_name: ScalingPolicy
   RegisterScalableTarget:
-    operation_type: Create
+    operation_type: 
+     - Create
+     - Update
     resource_name: ScalableTarget
   DeregisterScalableTarget:
-    operation_type: Delete
+    operation_type: 
+     - Delete
     resource_name: ScalableTarget
   DescribeScalableTargets:
     primary_identifier_field_name: ResourceID
