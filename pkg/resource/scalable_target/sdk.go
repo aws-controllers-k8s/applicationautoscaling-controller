@@ -240,9 +240,71 @@ func (rm *resourceManager) sdkUpdate(
 	desired *resource,
 	latest *resource,
 	delta *ackcompare.Delta,
-) (*resource, error) {
-	// TODO(jaypipes): Figure this out...
-	return nil, ackerr.NotImplemented
+) (updated *resource, err error) {
+	rlog := ackrtlog.FromContext(ctx)
+	exit := rlog.Trace("rm.sdkUpdate")
+	defer exit(err)
+	input, err := rm.newUpdateRequestPayload(ctx, desired)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp *svcsdk.RegisterScalableTargetOutput
+	_ = resp
+	resp, err = rm.sdkapi.RegisterScalableTargetWithContext(ctx, input)
+	rm.metrics.RecordAPICall("UPDATE", "RegisterScalableTarget", err)
+	if err != nil {
+		return nil, err
+	}
+	// Merge in the information we read from the API call above to the copy of
+	// the original Kubernetes object we passed to the function
+	ko := desired.ko.DeepCopy()
+
+	rm.setStatusDefaults(ko)
+	return &resource{ko}, nil
+}
+
+// newUpdateRequestPayload returns an SDK-specific struct for the HTTP request
+// payload of the Update API call for the resource
+func (rm *resourceManager) newUpdateRequestPayload(
+	ctx context.Context,
+	r *resource,
+) (*svcsdk.RegisterScalableTargetInput, error) {
+	res := &svcsdk.RegisterScalableTargetInput{}
+
+	if r.ko.Spec.MaxCapacity != nil {
+		res.SetMaxCapacity(*r.ko.Spec.MaxCapacity)
+	}
+	if r.ko.Spec.MinCapacity != nil {
+		res.SetMinCapacity(*r.ko.Spec.MinCapacity)
+	}
+	if r.ko.Spec.ResourceID != nil {
+		res.SetResourceId(*r.ko.Spec.ResourceID)
+	}
+	if r.ko.Spec.RoleARN != nil {
+		res.SetRoleARN(*r.ko.Spec.RoleARN)
+	}
+	if r.ko.Spec.ScalableDimension != nil {
+		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+	}
+	if r.ko.Spec.ServiceNamespace != nil {
+		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+	}
+	if r.ko.Spec.SuspendedState != nil {
+		f6 := &svcsdk.SuspendedState{}
+		if r.ko.Spec.SuspendedState.DynamicScalingInSuspended != nil {
+			f6.SetDynamicScalingInSuspended(*r.ko.Spec.SuspendedState.DynamicScalingInSuspended)
+		}
+		if r.ko.Spec.SuspendedState.DynamicScalingOutSuspended != nil {
+			f6.SetDynamicScalingOutSuspended(*r.ko.Spec.SuspendedState.DynamicScalingOutSuspended)
+		}
+		if r.ko.Spec.SuspendedState.ScheduledScalingSuspended != nil {
+			f6.SetScheduledScalingSuspended(*r.ko.Spec.SuspendedState.ScheduledScalingSuspended)
+		}
+		res.SetSuspendedState(f6)
+	}
+
+	return res, nil
 }
 
 // sdkDelete deletes the supplied resource in the backend AWS service API
