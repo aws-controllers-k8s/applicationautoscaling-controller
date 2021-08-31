@@ -42,8 +42,14 @@ SAGEMAKER_XGBOOST_IMAGE_URIS = {
     "sa-east-1": "737474898029.dkr.ecr.sa-east-1.amazonaws.com",
 }
 
+ENDPOINT_INSTANCE_TYPES = {
+    "eu-west-3": "ml.m5.large",
+    "eu-north-1": "ml.m5.large",
+}
+
 REPLACEMENT_VALUES = {
     "SAGEMAKER_DATA_BUCKET": get_bootstrap_resources().SageMakerDataBucketName,
     "SAGEMAKER_EXECUTION_ROLE_ARN": get_bootstrap_resources().SageMakerExecutionRoleARN,
     "SAGEMAKER_XGBOOST_IMAGE_URI": f"{SAGEMAKER_XGBOOST_IMAGE_URIS[get_region()]}/sagemaker-xgboost:1.0-1-cpu-py3",
+    "ENDPOINT_INSTANCE_TYPE": ENDPOINT_INSTANCE_TYPES.get(get_region(), 'ml.c5.large'),
 }

@@ -93,7 +93,7 @@ def sagemaker_make_endpoint_config(model_name, endpoint_config_name):
                 "VariantName": "variant-1",
                 "ModelName": model_name,
                 "InitialInstanceCount": 1,
-                "InstanceType": "ml.c5.large",
+                "InstanceType": REPLACEMENT_VALUES["ENDPOINT_INSTANCE_TYPE"],
             }
         ],
     }
