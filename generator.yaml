@@ -9,9 +9,9 @@ operations:
     operation_type: Delete
     resource_name: ScalableTarget
   DescribeScalableTargets:
-    primary_identifier_field_name: ResourceID
+    primary_identifier_field_name: ResourceId
   DescribeScalingPolicies:
-    primary_identifier_field_name: ResourceID
+    primary_identifier_field_name: ResourceId
 resources:
   ScalableTarget:
     is_adoptable: false

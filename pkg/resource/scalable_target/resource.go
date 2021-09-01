@@ -92,19 +92,24 @@ func (r *resource) SetStatus(desired acktypes.AWSResource) {
 // SetIdentifiers sets the Spec or Status field that is referenced as the unique
 // resource identifier
 func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error {
-	if r.ko.Status.ACKResourceMetadata == nil {
-		r.ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	if identifier.NameOrID == "" {
+		return ackerrors.MissingNameIdentifier
 	}
-	r.ko.Status.ACKResourceMetadata.ARN = identifier.ARN
 
-	f0, f0ok := identifier.AdditionalKeys["scalableDimension"]
-	if f0ok {
-		r.ko.Spec.ScalableDimension = &f0
+	f3, f3ok := identifier.AdditionalKeys["scalableDimension"]
+	if f3ok {
+		r.ko.Spec.ScalableDimension = &f3
 	}
-	f1, f1ok := identifier.AdditionalKeys["serviceNamespace"]
-	if f1ok {
-		r.ko.Spec.ServiceNamespace = &f1
+	f4, f4ok := identifier.AdditionalKeys["serviceNamespace"]
+	if f4ok {
+		r.ko.Spec.ServiceNamespace = &f4
 	}
 
 	return nil
+}
+
+// DeepCopy will return a copy of the resource
+func (r *resource) DeepCopy() acktypes.AWSResource {
+	koCopy := r.ko.DeepCopy()
+	return &resource{koCopy}
 }
