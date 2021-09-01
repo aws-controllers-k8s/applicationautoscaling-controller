@@ -13,8 +13,9 @@ status:
   ackResourceMetadata:
     ownerAccountID: ""
   conditions:
-  - message: 'The service namespace must be one of the following: appstream | cassandra
-      | comprehend | custom-resource | dynamodb | ec2 | ecs | elasticmapreduce | kafka
-      | lambda | rds | sagemaker.'
+  - message: "InvalidParameterValue: The service namespace must be one of the following:
+      appstream | cassandra | comprehend | custom-resource | dynamodb | ec2 | ecs
+      | elasticmapreduce | kafka | lambda | rds | sagemaker.\n\tstatus code: 0, request
+      id: "
     status: "True"
     type: ACK.Recoverable

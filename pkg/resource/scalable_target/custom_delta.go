@@ -18,7 +18,7 @@ import (
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 )
 
-// customSetDefaults is a temporary workaround until the code generator supports adding server-side defaults. 
+// customSetDefaults is a temporary workaround until the code generator supports adding server-side defaults.
 func customSetDefaults(
 	a *resource,
 	b *resource,

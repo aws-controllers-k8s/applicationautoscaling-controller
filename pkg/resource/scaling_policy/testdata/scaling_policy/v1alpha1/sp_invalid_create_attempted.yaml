@@ -19,6 +19,7 @@ status:
   ackResourceMetadata:
     ownerAccountID: ""
   conditions:
-  - message: The policy name must start with an alphanumeric character.
+  - message: "InvalidParameterValue: The policy name must start with an alphanumeric
+      character.\n\tstatus code: 0, request id: "
     status: "True"
     type: ACK.Recoverable

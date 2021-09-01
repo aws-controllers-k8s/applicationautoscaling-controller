@@ -74,17 +74,42 @@ func (r *resource) Conditions() []*ackv1alpha1.Condition {
 	return r.ko.Status.Conditions
 }
 
+// ReplaceConditions sets the Conditions status field for the resource
+func (r *resource) ReplaceConditions(conditions []*ackv1alpha1.Condition) {
+	r.ko.Status.Conditions = conditions
+}
+
 // SetObjectMeta sets the ObjectMeta field for the resource
 func (r *resource) SetObjectMeta(meta metav1.ObjectMeta) {
 	r.ko.ObjectMeta = meta
 }
 
+// SetStatus will set the Status field for the resource
+func (r *resource) SetStatus(desired acktypes.AWSResource) {
+	r.ko.Status = desired.(*resource).ko.Status
+}
+
 // SetIdentifiers sets the Spec or Status field that is referenced as the unique
 // resource identifier
 func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error {
-	if identifier.NameOrID == nil {
+	if identifier.NameOrID == "" {
 		return ackerrors.MissingNameIdentifier
 	}
-	r.ko.Spec.ResourceID = identifier.NameOrID
+
+	f3, f3ok := identifier.AdditionalKeys["scalableDimension"]
+	if f3ok {
+		r.ko.Spec.ScalableDimension = &f3
+	}
+	f4, f4ok := identifier.AdditionalKeys["serviceNamespace"]
+	if f4ok {
+		r.ko.Spec.ServiceNamespace = &f4
+	}
+
 	return nil
+}
+
+// DeepCopy will return a copy of the resource
+func (r *resource) DeepCopy() acktypes.AWSResource {
+	koCopy := r.ko.DeepCopy()
+	return &resource{koCopy}
 }
