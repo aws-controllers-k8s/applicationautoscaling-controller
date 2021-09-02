@@ -89,7 +89,13 @@ scalabletarget.applicationautoscaling.services.k8s.aws "ack-scalable-target-pred
 scalingpolicy.applicationautoscaling.services.k8s.aws "ack-scaling-policy-predefined" deleted
 ```
 
-8. UPDATES: If you want to update the policy applied to your endpoint, you will have to follow a step by step process to first delete the existing policy, update the spec file and then re-apply the scaling policy. 
+8. UPDATES: You are now able to update the ScalableTarget and ScalingPolicy parameters once the resource has been created. In order to do this just edit the original spec file and resubmit using - 
+
+```
+kubectl apply -f hosting-autoscaling-predefined.yaml
+```
+Note - 
+The ScalableTarget resource's Update feature requires an additional inline policy attached to the OIDC IAM Role. Follow the steps in the [Getting Started README](https://github.com/aws-controllers-k8s/sagemaker-controller/blob/main/README.md).
 
 9. Other Spec Fields:
 You can refer to the second sample provided here `hosting-autoscaling-custom-metric.yaml` to check out an example of using a `customMetric` in the scaling policy or fields like `suspendedState` in the scalable Target. 
