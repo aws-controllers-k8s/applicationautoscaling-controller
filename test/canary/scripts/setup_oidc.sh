@@ -38,6 +38,21 @@ function generate_trust_policy() {
 EOF
 }
 
+function generate_pass_role_policy() {
+  cat <<EOF > pass_role_policy.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+      {
+          "Effect": "Allow",
+          "Action": "iam:PassRole",
+          "Resource": "*"
+      }
+  ]
+}
+EOF
+}
+
 function create_oidc_role() {
   local cluster_name="$1"
   local region="$2"
@@ -56,11 +71,15 @@ function create_oidc_role() {
     echo "Creating new IAM role: $oidc_role_name"
     local oidc_url=$(get_oidc_id "$cluster_name" "$region")
     local trustfile="trust.json"
+    local pass_role_policy_file="pass_role_policy.json"
     generate_trust_policy "$oidc_url" "$namespace"
     aws iam create-role --role-name "$oidc_role_name" --assume-role-policy-document file://${trustfile}
     aws iam attach-role-policy --role-name "$oidc_role_name" --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
     aws iam attach-role-policy --role-name "$oidc_role_name" --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+    generate_pass_role_policy
+    aws iam put-role-policy --role-name "$oidc_role_name" --policy-name "pass-role-policy" --policy-document file://${pass_role_policy_file}
     rm "${trustfile}" 
+    rm "${pass_role_policy_file}"
   fi
   local oidc_role_arn=$(aws iam get-role --role-name $oidc_role_name --output text --query 'Role.Arn')
   export OIDC_ROLE_ARN=$oidc_role_arn
