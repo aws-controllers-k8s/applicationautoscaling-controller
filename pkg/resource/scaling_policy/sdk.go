@@ -93,6 +93,11 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Status.Alarms = nil
 		}
+		if elem.CreationTime != nil {
+			ko.Status.CreationTime = &metav1.Time{*elem.CreationTime}
+		} else {
+			ko.Status.CreationTime = nil
+		}
 		if elem.PolicyARN != nil {
 			if ko.Status.ACKResourceMetadata == nil {
 				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}

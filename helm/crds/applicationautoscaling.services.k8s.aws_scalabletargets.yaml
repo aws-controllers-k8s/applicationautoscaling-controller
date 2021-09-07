@@ -238,6 +238,10 @@ spec:
                   - type
                   type: object
                 type: array
+              creationTime:
+                description: The Unix timestamp for when the scalable target was created.
+                format: date-time
+                type: string
             type: object
         type: object
     served: true

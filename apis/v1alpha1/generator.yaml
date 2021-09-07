@@ -28,6 +28,11 @@ resources:
     fields:
       ResourceID:
         is_name: true
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: DescribeScalableTargets
+          path: ScalableTargets..CreationTime
   ScalingPolicy:
     is_adoptable: false
     fields:
@@ -35,6 +40,11 @@ resources:
         is_name: true
       PolicyARN: 
         is_arn: true
+      CreationTime:
+        is_read_only: true
+        from:
+          operation: DescribeScalingPolicies
+          path: ScalingPolicies..CreationTime
 ignore:
     resource_names:
       - ScheduledAction

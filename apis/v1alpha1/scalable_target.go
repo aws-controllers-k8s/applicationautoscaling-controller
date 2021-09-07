@@ -199,6 +199,9 @@ type ScalableTargetStatus struct {
 	// resource
 	// +kubebuilder:validation:Optional
 	Conditions []*ackv1alpha1.Condition `json:"conditions"`
+	// The Unix timestamp for when the scalable target was created.
+	// +kubebuilder:validation:Optional
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 }
 
 // ScalableTarget is the Schema for the ScalableTargets API
