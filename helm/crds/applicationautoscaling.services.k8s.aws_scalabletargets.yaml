@@ -242,6 +242,10 @@ spec:
                 description: The Unix timestamp for when the scalable target was created.
                 format: date-time
                 type: string
+              lastModifiedTime:
+                description: The Unix timestamp for when the scalable target was created.
+                format: date-time
+                type: string
             type: object
         type: object
     served: true

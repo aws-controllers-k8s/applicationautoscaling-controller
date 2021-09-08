@@ -11,32 +11,16 @@
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-package scalable_target
+package scaling_policy
 
 import (
-	"context"
 	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
-	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
 
-func (rm *resourceManager) customDescribeScalableTarget(
-	ctx context.Context,
-	latest *resource,
-	input *svcsdk.DescribeScalableTargetsInput,
-) {
-	latestSpec := latest.ko.Spec
-
-	var resourceIDList []*string
-	if latestSpec.ResourceID != nil {
-		resourceIDList = append(resourceIDList, latestSpec.ResourceID)
-		input.SetResourceIds(resourceIDList)
-	}
-}
-
 // customSetOutputUpdate sets the LastModifiedTime field to the current time post an update
-func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalableTarget) {
+func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalingPolicy) {
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
 }

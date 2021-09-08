@@ -21,10 +21,14 @@ resources:
   ScalableTarget:
     is_adoptable: false
     hooks:
-        sdk_read_many_post_build_request:
-          code: rm.customDescribeScalableTarget(ctx, r, input)
-        delta_pre_compare:
-          code: customSetDefaults(a, b)
+      sdk_create_post_set_output:
+        code: rm.customSetLastModifiedTime(ko)
+      sdk_read_many_post_build_request:
+        code: rm.customDescribeScalableTarget(ctx, r, input)
+      delta_pre_compare:
+        code: customSetDefaults(a, b)
+      sdk_update_post_set_output:
+        code: rm.customSetLastModifiedTime(ko)
     fields:
       ResourceID:
         is_name: true
@@ -33,14 +37,29 @@ resources:
         from:
           operation: DescribeScalableTargets
           path: ScalableTargets..CreationTime
+      LastModifiedTime:
+        is_read_only: true
+        from:
+          operation: DescribeScalableTargets
+          path: ScalableTargets..CreationTime
   ScalingPolicy:
     is_adoptable: false
+    hooks:
+      sdk_create_post_set_output:
+        code: rm.customSetLastModifiedTime(ko)
+      sdk_update_post_set_output:
+        code: rm.customSetLastModifiedTime(ko)
     fields:
       ResourceID:
         is_name: true
       PolicyARN: 
         is_arn: true
       CreationTime:
+        is_read_only: true
+        from:
+          operation: DescribeScalingPolicies
+          path: ScalingPolicies..CreationTime
+      LastModifiedTime:
         is_read_only: true
         from:
           operation: DescribeScalingPolicies
