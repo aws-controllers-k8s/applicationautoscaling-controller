@@ -78,6 +78,11 @@ func (rm *resourceManager) sdkFind(
 
 	found := false
 	for _, elem := range resp.ScalableTargets {
+		if elem.CreationTime != nil {
+			ko.Status.CreationTime = &metav1.Time{*elem.CreationTime}
+		} else {
+			ko.Status.CreationTime = nil
+		}
 		if elem.MaxCapacity != nil {
 			ko.Spec.MaxCapacity = elem.MaxCapacity
 		} else {

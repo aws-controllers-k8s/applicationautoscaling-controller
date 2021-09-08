@@ -184,6 +184,9 @@ type ScalingPolicyStatus struct {
 	// The CloudWatch alarms created for the target tracking scaling policy.
 	// +kubebuilder:validation:Optional
 	Alarms []*Alarm `json:"alarms,omitempty"`
+	// The Unix timestamp for when the scaling policy was created.
+	// +kubebuilder:validation:Optional
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 }
 
 // ScalingPolicy is the Schema for the ScalingPolicies API
