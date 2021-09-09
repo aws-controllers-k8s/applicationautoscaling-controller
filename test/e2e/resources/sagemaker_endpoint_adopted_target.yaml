@@ -1,0 +1,15 @@
+apiVersion: services.k8s.aws/v1alpha1
+kind: AdoptedResource
+metadata:
+  name: $ADOPTED_TARGET_NAME
+spec:
+  aws:
+    nameOrID: $RESOURCE_ID
+    additionalKeys:
+      serviceNamespace: "sagemaker"
+      scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  kubernetes:
+    group: applicationautoscaling.services.k8s.aws
+    kind: ScalableTarget
+    metadata:
+      name: $ADOPTED_TARGET_NAME

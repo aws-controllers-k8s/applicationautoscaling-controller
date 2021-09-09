@@ -20,6 +20,7 @@ from acktest.resources import load_resource_file
 
 SERVICE_NAME = "applicationautoscaling"
 CRD_GROUP = "applicationautoscaling.services.k8s.aws"
+ADOPTED_RESOURCE_CRD_GROUP = "services.k8s.aws"
 CRD_VERSION = "v1alpha1"
 
 # PyTest marker for the current service
@@ -54,6 +55,24 @@ def create_applicationautoscaling_resource(
         CRD_GROUP,
         CRD_VERSION,
         resource_plural,
+        resource_name,
+        spec_file,
+        replacements,
+        namespace,
+    )
+
+    return reference, spec, resource
+
+def create_adopted_resource(resource_name, spec_file, replacements, namespace="default"):
+    """
+    Wrapper around k8s.load_and_create_resource to create a Adopoted resource
+    """
+
+    reference, spec, resource = k8s.load_and_create_resource(
+        resource_directory,
+        ADOPTED_RESOURCE_CRD_GROUP,
+        CRD_VERSION,
+        "adoptedresources",
         resource_name,
         spec_file,
         replacements,

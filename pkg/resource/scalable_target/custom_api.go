@@ -16,6 +16,7 @@ package scalable_target
 import (
 	"context"
 	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
+	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
@@ -39,4 +40,20 @@ func (rm *resourceManager) customDescribeScalableTarget(
 func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalableTarget) {
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
+}
+
+func (r *resource) customSetIdentifierCode(
+	identifier *ackv1alpha1.AWSIdentifiers,
+) {
+	r.ko.Spec.ResourceID = &identifier.NameOrID
+}
+
+// customCheckRequiredFieldsMissingMethod returns true if there are any fields
+// for the ReadOne Input shape that are required but not present in the
+// resource's Spec or Status
+func (rm *resourceManager) customCheckRequiredFieldsMissingMethod(
+	r *resource,
+) bool {
+	return r.ko.Spec.ResourceID == nil
+
 }
