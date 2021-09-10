@@ -202,6 +202,9 @@ type ScalableTargetStatus struct {
 	// The Unix timestamp for when the scalable target was created.
 	// +kubebuilder:validation:Optional
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The Unix timestamp for when the scalable target was created.
+	// +kubebuilder:validation:Optional
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
 // ScalableTarget is the Schema for the ScalableTargets API

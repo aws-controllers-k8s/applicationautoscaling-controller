@@ -192,6 +192,7 @@ func (rm *resourceManager) sdkCreate(
 	ko := desired.ko.DeepCopy()
 
 	rm.setStatusDefaults(ko)
+	rm.customSetLastModifiedTime(ko)
 	return &resource{ko}, nil
 }
 
@@ -266,6 +267,7 @@ func (rm *resourceManager) sdkUpdate(
 	ko := desired.ko.DeepCopy()
 
 	rm.setStatusDefaults(ko)
+	rm.customSetLastModifiedTime(ko)
 	return &resource{ko}, nil
 }
 

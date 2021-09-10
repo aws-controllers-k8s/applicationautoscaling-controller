@@ -187,6 +187,9 @@ type ScalingPolicyStatus struct {
 	// The Unix timestamp for when the scaling policy was created.
 	// +kubebuilder:validation:Optional
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The Unix timestamp for when the scaling policy was created.
+	// +kubebuilder:validation:Optional
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
 // ScalingPolicy is the Schema for the ScalingPolicies API
