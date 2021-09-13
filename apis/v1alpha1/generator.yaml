@@ -30,7 +30,7 @@ resources:
       sdk_update_post_set_output:
         code: rm.customSetLastModifiedTime(ko)
       set_identifiers_pre_read_one:
-        code: r.customSetIdentifierCode(identifier)
+        code: r.customSetPrimaryIdentifier(identifier)
     fields:
       ResourceID:
         is_name: true
