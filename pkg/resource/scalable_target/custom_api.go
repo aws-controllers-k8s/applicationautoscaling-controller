@@ -42,7 +42,9 @@ func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalableTar
 	ko.Status.LastModifiedTime = &currentTime
 }
 
-func (r *resource) customSetIdentifierCode(
+// customSetPrimaryIdentifier sets the ResourceId as the primary Identifier since there is
+// a mismatch in the describe output and inputShape for this resource
+func (r *resource) customSetPrimaryIdentifier(
 	identifier *ackv1alpha1.AWSIdentifiers,
 ) {
 	r.ko.Spec.ResourceID = &identifier.NameOrID

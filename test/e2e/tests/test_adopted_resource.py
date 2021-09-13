@@ -61,12 +61,8 @@ def sagemaker_endpoint(name_suffix):
     resource_id = f"endpoint/{endpoint_name}/variant/variant-1"
 
     _, _ = sagemaker_make_model(model_name)
-    _, _ = sagemaker_make_endpoint_config(
-        model_name, endpoint_config_name
-    )
-    _, _ = sagemaker_make_endpoint(
-        endpoint_name, endpoint_config_name
-    )
+    _, _ = sagemaker_make_endpoint_config(model_name, endpoint_config_name)
+    _, _ = sagemaker_make_endpoint(endpoint_name, endpoint_config_name)
 
     wait_sagemaker_endpoint_status(endpoint_name, ENDPOINT_STATUS_INSERVICE)
     assert resource_id is not None
@@ -80,20 +76,17 @@ def sagemaker_endpoint(name_suffix):
 @pytest.fixture(scope="module")
 def register_scalable_target(sagemaker_endpoint):
     resource_id = sagemaker_endpoint
-    _ = sagemaker_endpoint_register_scalable_target(
-        resource_id
-    )
+    _ = sagemaker_endpoint_register_scalable_target(resource_id)
 
     yield resource_id
     sagemaker_endpoint_deregister_scalable_target(resource_id)
+
 
 @pytest.fixture(scope="module")
 def put_scaling_policy(register_scalable_target):
     resource_id = register_scalable_target
     policy_name = random_suffix_name("policy_name", 32)
-    _ = sagemaker_endpoint_put_scaling_policy(
-        resource_id, policy_name
-    )
+    _ = sagemaker_endpoint_put_scaling_policy(resource_id, policy_name)
 
     yield resource_id
     sagemaker_endpoint_delete_scaling_policy(resource_id, policy_name)
@@ -153,15 +146,20 @@ class TestAdoptedSageMakerEndpointAutoscaling:
     def test_smoke(self, put_scaling_policy, adopt_scaling_policy):
         sdk_resource_id = put_scaling_policy
 
-        (   adopted_resource_id,
+        (
+            adopted_resource_id,
             adopted_target_reference,
             adopted_policy_reference,
         ) = adopt_scaling_policy
 
         assert sdk_resource_id == adopted_resource_id
 
-        target_name = k8s.get_resource(adopted_target_reference)["spec"]["kubernetes"]["metadata"]["name"]
-        policy_name = k8s.get_resource(adopted_policy_reference)["spec"]["kubernetes"]["metadata"]["name"]
+        target_name = k8s.get_resource(adopted_target_reference)["spec"]["kubernetes"][
+            "metadata"
+        ]["name"]
+        policy_name = k8s.get_resource(adopted_policy_reference)["spec"]["kubernetes"][
+            "metadata"
+        ]["name"]
 
         assert target_name is not None
         assert policy_name is not None
@@ -187,8 +185,6 @@ class TestAdoptedSageMakerEndpointAutoscaling:
         assert policy_resource is not None
 
         assert policy_resource["spec"].get("resourceID", None) == sdk_resource_id
-        
-
 
         # Delete the Resource
         _, deleted = k8s.delete_custom_resource(adopted_policy_reference)
@@ -196,4 +192,3 @@ class TestAdoptedSageMakerEndpointAutoscaling:
 
         _, deleted = k8s.delete_custom_resource(adopted_target_reference)
         assert deleted is True
-        

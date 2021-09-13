@@ -105,7 +105,7 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 		r.ko.Spec.ServiceNamespace = &f4
 	}
 
-	r.customSetIdentifierCode(identifier)
+	r.customSetPrimaryIdentifier(identifier)
 	return nil
 }
 
