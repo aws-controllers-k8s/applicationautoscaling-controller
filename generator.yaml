@@ -14,10 +14,7 @@ operations:
      - Delete
     resource_name: ScalableTarget
   DescribeScalableTargets:
-    primary_identifier_field_name: ResourceId
     custom_check_required_fields_missing_method: customCheckRequiredFieldsMissingMethod
-  DescribeScalingPolicies:
-    primary_identifier_field_name: ResourceId
 resources:
   ScalableTarget:
     hooks:
@@ -29,11 +26,9 @@ resources:
         code: customSetDefaults(a, b)
       sdk_update_post_set_output:
         code: rm.customSetLastModifiedTime(ko)
-      set_identifiers_pre_read_one:
-        code: r.customSetPrimaryIdentifier(identifier)
     fields:
       ResourceID:
-        is_name: true
+        is_primary_key: true
       CreationTime:
         is_read_only: true
         from:
@@ -52,7 +47,7 @@ resources:
         code: rm.customSetLastModifiedTime(ko)
     fields:
       ResourceID:
-        is_name: true
+        is_primary_key: true
       PolicyARN: 
         is_arn: true
       CreationTime:

@@ -186,9 +186,16 @@ class TestAdoptedSageMakerEndpointAutoscaling:
 
         assert policy_resource["spec"].get("resourceID", None) == sdk_resource_id
 
-        # Delete the Resource
+        # Delete the Adopted Resources
         _, deleted = k8s.delete_custom_resource(adopted_policy_reference)
         assert deleted is True
 
         _, deleted = k8s.delete_custom_resource(adopted_target_reference)
+        assert deleted is True
+
+        # Delete the ApplicationAutoscaling Resources
+        _, deleted = k8s.delete_custom_resource(policy_reference)
+        assert deleted is True
+
+        _, deleted = k8s.delete_custom_resource(target_reference)
         assert deleted is True
