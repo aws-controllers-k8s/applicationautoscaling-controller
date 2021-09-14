@@ -29,7 +29,7 @@ from e2e.common.sagemaker_utils import (
     sagemaker_make_endpoint_config,
     sagemaker_make_endpoint,
 )
-from e2e.common.application_autoscaling_utils import (
+from e2e.common.utils import (
     sagemaker_endpoint_register_scalable_target,
     sagemaker_endpoint_put_scaling_policy,
     sagemaker_endpoint_deregister_scalable_target,
@@ -142,8 +142,8 @@ def adopt_scaling_policy(adopt_scalable_target):
 
 @service_marker
 @pytest.mark.canary
-class TestAdoptedSageMakerEndpointAutoscaling:
-    def test_smoke(self, put_scaling_policy, adopt_scaling_policy):
+class TestAdopted:
+    def test_sagemaker_endpoint_autoscaling(self, put_scaling_policy, adopt_scaling_policy):
         sdk_resource_id = put_scaling_policy
 
         (

@@ -14,7 +14,7 @@ operations:
      - Delete
     resource_name: ScalableTarget
   DescribeScalableTargets:
-    custom_check_required_fields_missing_method: customCheckRequiredFieldsMissingMethod
+    custom_check_required_fields_missing_method: customCheckRequiredFieldsMissing
 resources:
   ScalableTarget:
     hooks:
