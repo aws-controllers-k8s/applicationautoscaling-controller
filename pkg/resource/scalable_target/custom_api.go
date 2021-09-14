@@ -35,8 +35,13 @@ func (rm *resourceManager) customDescribeScalableTarget(
 	}
 }
 
+// customSetOutputUpdate sets the LastModifiedTime field to the creationTime
+func (rm *resourceManager) customSetLastModifiedTimeToCreationTime(ko *svcapitypes.ScalableTarget) {
+	ko.Status.LastModifiedTime = ko.Status.CreationTime
+}
+
 // customSetOutputUpdate sets the LastModifiedTime field to the current time post an update
-func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalableTarget) {
+func (rm *resourceManager) customSetLastModifiedTimeToCurrentTime(ko *svcapitypes.ScalableTarget) {
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
 }
