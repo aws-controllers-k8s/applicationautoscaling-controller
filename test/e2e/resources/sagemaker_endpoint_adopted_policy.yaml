@@ -1,0 +1,14 @@
+apiVersion: services.k8s.aws/v1alpha1
+kind: AdoptedResource
+metadata:
+  name: $ADOPTED_POLICY_NAME
+spec:
+  aws:
+    nameOrID: $RESOURCE_ID
+    additionalKeys:
+      serviceNamespace: sagemaker
+  kubernetes:
+    group: applicationautoscaling.services.k8s.aws
+    kind: ScalingPolicy
+    metadata:
+      name: $ADOPTED_POLICY_NAME

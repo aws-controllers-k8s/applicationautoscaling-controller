@@ -40,3 +40,13 @@ func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalableTar
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
 }
+
+// customCheckRequiredFieldsMissing returns true if there are any fields
+// for the ReadOne Input shape that are required but not present in the
+// resource's Spec or Status
+func (rm *resourceManager) customCheckRequiredFieldsMissing(
+	r *resource,
+) bool {
+	return r.ko.Spec.ResourceID == nil
+
+}
