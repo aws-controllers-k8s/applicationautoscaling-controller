@@ -37,7 +37,9 @@ func (rm *resourceManager) customDescribeScalableTarget(
 
 // customSetOutputUpdate sets the LastModifiedTime field to the creationTime
 func (rm *resourceManager) customSetLastModifiedTimeToCreationTime(ko *svcapitypes.ScalableTarget) {
-	ko.Status.LastModifiedTime = ko.Status.CreationTime
+	if ko.Status.CreationTime != nil && ko.Status.LastModifiedTime == nil {
+		ko.Status.LastModifiedTime = ko.Status.CreationTime
+	}
 }
 
 // customSetOutputUpdate sets the LastModifiedTime field to the current time post an update

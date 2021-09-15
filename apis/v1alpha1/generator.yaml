@@ -18,7 +18,7 @@ operations:
 resources:
   ScalableTarget:
     hooks:
-      sdk_create_post_set_output:
+      sdk_read_many_post_set_output:
         code: rm.customSetLastModifiedTimeToCreationTime(ko)
       sdk_read_many_post_build_request:
         code: rm.customDescribeScalableTarget(ctx, r, input)
@@ -41,7 +41,7 @@ resources:
           path: ScalableTargets..CreationTime
   ScalingPolicy:
     hooks:
-      sdk_create_post_set_output:
+      sdk_read_many_post_set_output:
         code: rm.customSetLastModifiedTimeToCreationTime(ko)
       sdk_update_post_set_output:
         code: rm.customSetLastModifiedTimeToCurrentTime(ko)
