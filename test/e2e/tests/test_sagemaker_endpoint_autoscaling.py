@@ -83,7 +83,11 @@ def generate_sagemaker_target(sagemaker_endpoint):
     replacements["SCALABLETARGET_NAME"] = target_resource_name
     replacements["RESOURCE_ID"] = resource_id
 
-    target_reference, target_spec, target_resource = create_applicationautoscaling_resource(
+    (
+        target_reference,
+        target_spec,
+        target_resource,
+    ) = create_applicationautoscaling_resource(
         resource_plural=TARGET_RESOURCE_PLURAL,
         resource_name=target_resource_name,
         spec_file="sagemaker_endpoint_autoscaling_target",
@@ -101,14 +105,23 @@ def generate_sagemaker_target(sagemaker_endpoint):
 
 @pytest.fixture(scope="module")
 def generate_sagemaker_policy(generate_sagemaker_target):
-    resource_id, target_reference, target_spec, target_resource = generate_sagemaker_target
+    (
+        resource_id,
+        target_reference,
+        target_spec,
+        target_resource,
+    ) = generate_sagemaker_target
     policy_resource_name = random_suffix_name("sagemaker-scaling-policy", 32)
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements["SCALINGPOLICY_NAME"] = policy_resource_name
     replacements["RESOURCE_ID"] = resource_id
 
-    policy_reference, policy_spec, policy_resource = create_applicationautoscaling_resource(
+    (
+        policy_reference,
+        policy_spec,
+        policy_resource,
+    ) = create_applicationautoscaling_resource(
         resource_plural=POLICY_RESOURCE_PLURAL,
         resource_name=policy_resource_name,
         spec_file="sagemaker_endpoint_autoscaling_policy",
@@ -117,7 +130,15 @@ def generate_sagemaker_policy(generate_sagemaker_target):
 
     assert policy_resource is not None
 
-    yield (resource_id, target_reference, target_spec, target_resource, policy_resource, policy_spec, policy_reference)
+    yield (
+        resource_id,
+        target_reference,
+        target_spec,
+        target_resource,
+        policy_resource,
+        policy_spec,
+        policy_reference,
+    )
 
     if k8s.get_resource_exists(policy_reference):
         _, deleted = k8s.delete_custom_resource(policy_reference)
@@ -128,7 +149,7 @@ def generate_sagemaker_policy(generate_sagemaker_target):
 @pytest.mark.canary
 class TestSageMakerEndpointAutoscaling:
     def wait_until_update(
-        self, reference, previous_modified_time, wait_period=30, wait_time=5
+        self, reference, previous_modified_time, wait_period=2, wait_time=30
     ):
         for i in range(wait_period):
             resource = k8s.get_resource(reference)
@@ -180,7 +201,9 @@ class TestSageMakerEndpointAutoscaling:
     def test_create(self, applicationautoscaling_client, generate_sagemaker_policy):
         (
             resource_id,
-            target_reference, target_spec, target_resource,
+            target_reference,
+            target_spec,
+            target_resource,
             policy_resource,
             policy_spec,
             policy_reference,
@@ -205,7 +228,9 @@ class TestSageMakerEndpointAutoscaling:
     def test_update(self, applicationautoscaling_client, generate_sagemaker_policy):
         (
             resource_id,
-            target_reference, target_spec, target_resource,
+            target_reference,
+            target_spec,
+            target_resource,
             policy_resource,
             policy_spec,
             policy_reference,
@@ -213,43 +238,46 @@ class TestSageMakerEndpointAutoscaling:
 
         updatedMaxCapacity = 4
         updatedTargetValue = 120
-        
+
         # Update the ScalableTarget
         target_spec["spec"]["maxCapacity"] = updatedMaxCapacity
         assert "lastModifiedTime" in target_resource["status"]
         last_modified_time = target_resource["status"]["lastModifiedTime"]
         k8s.patch_custom_resource(target_reference, target_spec)
         assert self.wait_until_update(target_reference, last_modified_time) == True
-        sleep(5)
-        
+
         updated_target_description = self.get_sagemaker_scalable_target_description(
             applicationautoscaling_client, resource_id, 1
         )
         assert updated_target_description is not None
-        assert (
-            updated_target_description[0]["MaxCapacity"] == updatedMaxCapacity
-        )
+        assert updated_target_description[0]["MaxCapacity"] == updatedMaxCapacity
 
         # Update the ScalingPolicy
-        policy_spec["spec"]["targetTrackingScalingPolicyConfiguration"]["targetValue"] = updatedTargetValue
+        policy_spec["spec"]["targetTrackingScalingPolicyConfiguration"][
+            "targetValue"
+        ] = updatedTargetValue
         assert "lastModifiedTime" in policy_resource["status"]
         last_modified_time = policy_resource["status"]["lastModifiedTime"]
         k8s.patch_custom_resource(policy_reference, policy_spec)
         assert self.wait_until_update(policy_reference, last_modified_time) == True
-        sleep(5)
 
         updated_policy_description = self.get_sagemaker_scaling_policy_description(
             applicationautoscaling_client, resource_id, 1
         )
         assert updated_policy_description is not None
         assert (
-            updated_policy_description[0]["TargetTrackingScalingPolicyConfiguration"]["TargetValue"] == updatedTargetValue
+            updated_policy_description[0]["TargetTrackingScalingPolicyConfiguration"][
+                "TargetValue"
+            ]
+            == updatedTargetValue
         )
 
     def test_delete(self, applicationautoscaling_client, generate_sagemaker_policy):
         (
             resource_id,
-            target_reference, target_spec, target_resource,
+            target_reference,
+            target_spec,
+            target_resource,
             policy_resource,
             policy_spec,
             policy_reference,
