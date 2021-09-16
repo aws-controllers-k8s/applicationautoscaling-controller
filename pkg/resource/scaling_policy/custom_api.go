@@ -19,8 +19,15 @@ import (
 	"time"
 )
 
-// customSetOutputUpdate sets the LastModifiedTime field to the current time post an update
-func (rm *resourceManager) customSetLastModifiedTime(ko *svcapitypes.ScalingPolicy) {
+// customSetLastModifiedTimeToCreationTime sets the LastModifiedTime field to the creationTime
+func (rm *resourceManager) customSetLastModifiedTimeToCreationTime(ko *svcapitypes.ScalingPolicy) {
+	if ko.Status.CreationTime != nil && ko.Status.LastModifiedTime == nil {
+		ko.Status.LastModifiedTime = ko.Status.CreationTime
+	}
+}
+
+// customSetLastModifiedTimeToCurrentTime sets the LastModifiedTime field to the current time post an update
+func (rm *resourceManager) customSetLastModifiedTimeToCurrentTime(ko *svcapitypes.ScalingPolicy) {
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
 }

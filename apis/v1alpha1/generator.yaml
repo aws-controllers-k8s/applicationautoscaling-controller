@@ -18,14 +18,14 @@ operations:
 resources:
   ScalableTarget:
     hooks:
-      sdk_create_post_set_output:
-        code: rm.customSetLastModifiedTime(ko)
+      sdk_read_many_post_set_output:
+        code: rm.customSetLastModifiedTimeToCreationTime(ko)
       sdk_read_many_post_build_request:
         code: rm.customDescribeScalableTarget(ctx, r, input)
       delta_pre_compare:
         code: customSetDefaults(a, b)
       sdk_update_post_set_output:
-        code: rm.customSetLastModifiedTime(ko)
+        code: rm.customSetLastModifiedTimeToCurrentTime(ko)
     fields:
       ResourceID:
         is_primary_key: true
@@ -41,10 +41,10 @@ resources:
           path: ScalableTargets..CreationTime
   ScalingPolicy:
     hooks:
-      sdk_create_post_set_output:
-        code: rm.customSetLastModifiedTime(ko)
+      sdk_read_many_post_set_output:
+        code: rm.customSetLastModifiedTimeToCreationTime(ko)
       sdk_update_post_set_output:
-        code: rm.customSetLastModifiedTime(ko)
+        code: rm.customSetLastModifiedTimeToCurrentTime(ko)
     fields:
       ResourceID:
         is_primary_key: true

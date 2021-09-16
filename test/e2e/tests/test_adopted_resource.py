@@ -143,7 +143,9 @@ def adopt_scaling_policy(adopt_scalable_target):
 @service_marker
 @pytest.mark.canary
 class TestAdopted:
-    def test_sagemaker_endpoint_autoscaling(self, put_scaling_policy, adopt_scaling_policy):
+    def test_sagemaker_endpoint_autoscaling(
+        self, put_scaling_policy, adopt_scaling_policy
+    ):
         sdk_resource_id = put_scaling_policy
 
         (

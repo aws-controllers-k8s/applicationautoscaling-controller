@@ -233,6 +233,7 @@ func (rm *resourceManager) sdkFind(
 	}
 
 	rm.setStatusDefaults(ko)
+	rm.customSetLastModifiedTimeToCreationTime(ko)
 	return &resource{ko}, nil
 }
 
@@ -316,7 +317,6 @@ func (rm *resourceManager) sdkCreate(
 	}
 
 	rm.setStatusDefaults(ko)
-	rm.customSetLastModifiedTime(ko)
 	return &resource{ko}, nil
 }
 
@@ -488,7 +488,7 @@ func (rm *resourceManager) sdkUpdate(
 	}
 
 	rm.setStatusDefaults(ko)
-	rm.customSetLastModifiedTime(ko)
+	rm.customSetLastModifiedTimeToCurrentTime(ko)
 	return &resource{ko}, nil
 }
 
