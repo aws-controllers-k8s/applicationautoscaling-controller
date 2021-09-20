@@ -39,8 +39,4 @@ func customSetDefaults(
 		}
 	}
 
-	if ackcompare.IsNil(a.ko.Spec.RoleARN) && ackcompare.IsNotNil(b.ko.Spec.RoleARN) {
-		a.ko.Spec.RoleARN = b.ko.Spec.RoleARN
-	}
-
 }

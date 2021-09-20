@@ -39,6 +39,9 @@ resources:
         from:
           operation: DescribeScalableTargets
           path: ScalableTargets..CreationTime
+      RoleARN:
+        late_initialize:
+          min_backoff_seconds: 5
   ScalingPolicy:
     hooks:
       sdk_read_many_post_set_output:
