@@ -1,11 +1,11 @@
 tests:
-  - name: "Scalable target demo test"
-    description: "Scalable target CRD tests"
+  - name: "ScalableTarget create tests"
+    description: "ScalableTarget create tests"
     scenarios:
-     - name: "Put=InvalidInput"
-       description: "Given one of the parameters is invalid, ko.Status shows a terminal condition"
+     - name: "Create=InvalidInput"
+       description: "Given one of the parameters is invalid, the status should show a error message."
        given:
-         desired_state: "scalable_target/v1alpha1/st_invalid_before_create.yaml"
+         desired_state: "scalable_target/v1alpha1/create/desired/invalid_before_create.yaml"
          svc_api:
            - operation: RegisterScalableTargetWithContext
              error:
@@ -13,5 +13,103 @@ tests:
                message: "The service namespace must be one of the following: appstream | cassandra | comprehend | custom-resource | dynamodb | ec2 | ecs | elasticmapreduce | kafka | lambda | rds | sagemaker."
        invoke: Create
        expect:
-         latest_state: "scalable_target/v1alpha1/st_invalid_create_attempted.yaml"
+         latest_state: "scalable_target/v1alpha1/create/observed/invalid_create_attempted.yaml"
          error: "InvalidParameterValue: The service namespace must be one of the following: appstream | cassandra | comprehend | custom-resource | dynamodb | ec2 | ecs | elasticmapreduce | kafka | lambda | rds | sagemaker.\n\tstatus code: 0, request id: "
+     - name: "Create=ValidInput"
+       description: "Register a new ScalableTarget successfully."
+       given:
+         desired_state: "scalable_target/v1alpha1/create/desired/valid_before_create.yaml"
+         svc_api:
+           - operation: RegisterScalableTargetWithContext
+             output_fixture: "scalable_target/sdkapi/create_success.json"
+       invoke: Create
+       expect:
+         latest_state: "scalable_target/v1alpha1/create/observed/valid_created_no_role.yaml"
+         error: nil
+  - name: "ScalableTarget delete tests"
+    description: "ScalableTarget delete tests"
+    scenarios:
+      - name: "Delete=Success"
+        description: "Successfully deregister a ScalableTarget"
+        given:
+          desired_state: "scalable_target/v1alpha1/create/observed/valid_created.yaml"
+          svc_api:
+            - operation: DeregisterScalableTargetWithContext
+        invoke: Delete
+        expect:
+          error: nil
+      - name: "Delete=Fail"
+        description: "If deletion fails, an error should be thrown"
+        given:
+          desired_state: "scalable_target/v1alpha1/create/observed/valid_created.yaml"
+          svc_api:
+            - operation: DeregisterScalableTargetWithContext
+              error:
+                code: ServiceUnavailable
+                message: "Server is down"
+        invoke: Delete
+        expect:
+          latest_state: "scalable_target/v1alpha1/delete/observed/error_on_delete.yaml"
+          error: "ServiceUnavailable: Server is down\n\tstatus code: 0, request id: "
+  - name: "ScalableTarget readone tests"
+    description: "ScalableTarget readone tests"
+    scenarios:
+    - name: "ReadOne=MissingRequiredField"
+      description: "Testing ReadOne when required field (serviceNamespace) is missing. No API call is made and returns error."
+      given: 
+        desired_state: "scalable_target/v1alpha1/readone/desired/missing_field.yaml"
+        svc_api:
+          - operation: DescribeScalableTargetsWithContext
+            error:
+              message: "resource not found"
+      invoke: ReadOne
+      expect:
+        error: ": resource not found\n\tstatus code: 0, request id: "
+    - name: "ReadOne=NotFound"
+      description: "Testing ReadOne when Describe fails to find the resource on SageMaker"
+      given: 
+        desired_state: "scalable_target/v1alpha1/create/observed/valid_created.yaml"
+        svc_api:
+          - operation: DescribeScalableTargetsWithContext
+            error:
+              message: "resource not found"
+      invoke: ReadOne
+      expect:
+        error: ": resource not found\n\tstatus code: 0, request id: "
+    - name: "ReadOne=Fail"
+      description: "This test checks if the condition is updated if describe fails and ReadOne returns error"
+      given: 
+        desired_state: "scalable_target/v1alpha1/create/observed/valid_created.yaml"
+        svc_api:
+          - operation: DescribeScalableTargetsWithContext
+            error:
+              code: ServiceUnavailable
+              message: "Server is down"
+      invoke: ReadOne
+      expect:
+        error: "ServiceUnavailable: Server is down\n\tstatus code: 0, request id: "
+    - name: "ReadOne=AfterCreate"
+      description: "Testing readOne right after create, there should be no delta."
+      given: 
+        desired_state: "scalable_target/v1alpha1/create/observed/valid_created.yaml"
+        svc_api:
+          - operation: DescribeScalableTargetsWithContext
+            output_fixture: "scalable_target/sdkapi/describe_success.json"
+      invoke: ReadOne
+      expect:
+        latest_state: "scalable_target/v1alpha1/create/observed/valid_created.yaml"
+  - name: "ScalableTarget update tests"
+    description: "ScalableTarget update tests"
+    scenarios:
+     - name: "Update=ValidInput"
+       description: "Update a ScalableTarget successfully."
+       given:
+         desired_state: "scalable_target/v1alpha1/update/desired/valid_before_update.yaml"
+         latest_state: "scalable_target/v1alpha1/update/observed/valid_updated.yaml"
+         svc_api:
+           - operation: RegisterScalableTargetWithContext
+             output_fixture: "scalable_target/sdkapi/create_success.json"
+       invoke: Update
+       expect:
+         latest_state: "scalable_target/v1alpha1/update/observed/valid_updated.yaml"
+         error: nil  
