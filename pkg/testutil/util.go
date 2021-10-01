@@ -64,6 +64,13 @@ func CreateAWSError(awsError ServiceAPIError) awserr.RequestFailure {
 	return awserr.NewRequestFailure(error, 0, "")
 }
 
+func cleanup(filename string) {
+	err := os.Remove(filename)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		panic("The specified file could not be deleted")
+		}
+}
+
 // Checks to see if the contents of a given yaml file, with name stored
 // in expectation, matches the given actualYamlByteArray.
 func IsYamlEqual(expectation *string, actualYamlByteArray *[]byte) bool {
@@ -72,17 +79,27 @@ func IsYamlEqual(expectation *string, actualYamlByteArray *[]byte) bool {
 
 	// Build a tmp file for the actual yaml.
 	actualYamlFileName := buildTmpFile("actualYaml", *actualYamlByteArray)
-	defer os.Remove(actualYamlFileName)
+	defer cleanup(actualYamlFileName)
 	if "" == actualYamlFileName {
 		fmt.Printf("Could not create temporary actual file.\n")
 		return false
 	}
 
 	// Replace Timestamps that would show up as different.
-	_, err := exec.Command("sed", "-r", "-i", ReplaceTimestampRegExp, actualYamlFileName).Output()
+	_, err := exec.Command("sed", "-r", "-i.tmp", ReplaceTimestampRegExp, actualYamlFileName).Output()
 	if isExecCommandError(err) {
 		return false
 	}
+	// Needed for the ApplicationAutoscaling unit tests to ignore the lastModifiedTime
+	_, err = exec.Command("sed", "-r", "-i.tmp", "/lastModifiedTime/d", actualYamlFileName).Output()
+	if isExecCommandError(err) {
+		return false
+	}
+
+	// Remove tmp files used as backup https://riptutorial.com/sed/topic/9436/bsd-macos-sed-vs--gnu-sed-vs--the-posix-sed-specification
+	// -i inplace-editing is not consistent on both GNU and non-GNU sed when not specifiying a backup file.
+	actualYamlFileNameTmp := actualYamlFileName + ".tmp"
+	defer cleanup(actualYamlFileNameTmp)
 
 	output, err := exec.Command("diff", "-c", expectedYamlFileName, actualYamlFileName).Output()
 	if isExecCommandError(err) {

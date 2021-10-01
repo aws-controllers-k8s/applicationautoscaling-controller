@@ -1,0 +1,27 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  creationTimestamp: null
+  name: unit-testing-scaling-policy
+spec:
+  policyName: valid-name
+  policyType: TargetTrackingScaling
+  resourceID: endpoint/unit-testing-endpoint/variant/variant-1
+  scalableDimension: sagemaker:variant:DesiredInstanceCount
+  serviceNamespace: sagemaker
+  targetTrackingScalingPolicyConfiguration:
+    predefinedMetricSpecification:
+      predefinedMetricType: SageMakerVariantInvocationsPerInstance
+    scaleInCooldown: 300
+    scaleOutCooldown: 300
+    targetValue: 60
+status:
+  ackResourceMetadata:
+    arn: arn:aws:autoscaling:us-west-2:12345678910:scalingPolicy:12345678910:resource/sagemaker/endpoint/unit-testing-endpoint/variant/variant-1:policyName/SageMakerEndpointInvocationScalingPolicy
+    ownerAccountID: ""
+  alarms:
+  - alarmARN: arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910
+    alarmName: TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910
+  - alarmARN: arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmLow-12345678910
+    alarmName: TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmLow-12345678910
+  conditions: []

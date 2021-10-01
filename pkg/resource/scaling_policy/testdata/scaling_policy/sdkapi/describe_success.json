@@ -1,0 +1,31 @@
+{
+    "ScalingPolicies": [
+        {
+            "PolicyARN": "arn:aws:autoscaling:us-west-2:12345678910:scalingPolicy:12345678910:resource/sagemaker/endpoint/unit-testing-endpoint/variant/variant-1:policyName/SageMakerEndpointInvocationScalingPolicy",
+            "PolicyName": "valid-name",
+            "ServiceNamespace": "sagemaker",
+            "ResourceId": "endpoint/unit-testing-endpoint/variant/variant-1",
+            "ScalableDimension": "sagemaker:variant:DesiredInstanceCount",
+            "PolicyType": "TargetTrackingScaling",
+            "TargetTrackingScalingPolicyConfiguration": {
+                "TargetValue": 30.0,
+                "PredefinedMetricSpecification": {
+                    "PredefinedMetricType": "SageMakerVariantInvocationsPerInstance"
+                },
+                "ScaleOutCooldown": 300,
+                "ScaleInCooldown": 300
+            },
+            "Alarms": [
+                {
+                    "AlarmName": "TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910",
+                    "AlarmARN": "arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910"
+                },
+                {
+                    "AlarmName": "TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmLow-12345678910",
+                    "AlarmARN": "arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmLow-12345678910"
+                }
+            ],
+            "LastModifiedTime": null
+        }
+    ]
+}

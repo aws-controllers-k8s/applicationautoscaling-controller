@@ -1,0 +1,14 @@
+{
+  "PolicyARN": "arn:aws:autoscaling:us-west-2:12345678910:scalingPolicy:12345678910:resource/sagemaker/endpoint/unit-testing-endpoint/variant/variant-1:policyName/SageMakerEndpointInvocationScalingPolicy",
+  "Alarms": [
+      {
+          "AlarmName": "TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910",
+          "AlarmARN": "arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910"
+      },
+      {
+          "AlarmName": "TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmLow-12345678910",
+          "AlarmARN": "arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmLow-12345678910"
+      }
+  ],
+  "CreationTime": "2021-09-30T18:35:04.409000-07:00"
+}
