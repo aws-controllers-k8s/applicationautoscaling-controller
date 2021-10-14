@@ -1,0 +1,20 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalableTarget
+metadata:
+  creationTimestamp: null
+  name: unit-testing-scalable-target
+spec:
+  maxCapacity: 2
+  minCapacity: 1
+  resourceID: endpoint/unit-testing-endpoint/variant/variant-1
+  roleARN: arn:aws:iam::1234567891:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint
+  scalableDimension: sagemaker:variant:DesiredInstanceCount
+  serviceNamespace: sagemaker
+  suspendedState:
+    dynamicScalingInSuspended: false
+    dynamicScalingOutSuspended: false
+    scheduledScalingSuspended: false
+status:
+  ackResourceMetadata:
+    ownerAccountID: ""
+  conditions: []

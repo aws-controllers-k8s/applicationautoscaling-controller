@@ -1,0 +1,19 @@
+{
+    "ScalableTargets": [
+        {
+            "ServiceNamespace": "sagemaker",
+            "ResourceId": "endpoint/unit-testing-endpoint/variant/variant-1",
+            "ScalableDimension": "sagemaker:variant:DesiredInstanceCount",
+            "MinCapacity": 1,
+            "MaxCapacity": 2,
+            "RoleARN": "arn:aws:iam::1234567891:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint",
+            "CreationTime": null,
+            "LastModifiedTime": null,
+            "SuspendedState": {
+                "DynamicScalingInSuspended": false,
+                "DynamicScalingOutSuspended": false,
+                "ScheduledScalingSuspended": false
+            }
+        }
+    ]
+}
