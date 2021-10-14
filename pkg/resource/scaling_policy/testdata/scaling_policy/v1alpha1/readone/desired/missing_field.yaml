@@ -1,0 +1,16 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: unit-testing-scaling-policy
+spec:
+  policyName: valid-name
+  policyType: TargetTrackingScaling
+  resourceID: endpoint/unit-testing-endpoint/variant/variant-1
+  scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  # serviceNamespace: sagemaker (intentionally missing field)
+  targetTrackingScalingPolicyConfiguration: 
+    targetValue: 30
+    scaleInCooldown: 300
+    scaleOutCooldown: 300
+    predefinedMetricSpecification: 
+        predefinedMetricType: SageMakerVariantInvocationsPerInstance
