@@ -17,10 +17,10 @@ import (
 	"errors"
 	"fmt"
 
+	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
 	"github.com/aws-controllers-k8s/applicationautoscaling-controller/pkg/testutil"
 	mocksvcsdkapi "github.com/aws-controllers-k8s/applicationautoscaling-controller/test/mocks/aws-sdk-go/applicationautoscaling"
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
-	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
 	ackmetrics "github.com/aws-controllers-k8s/runtime/pkg/metrics"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
 	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
