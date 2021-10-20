@@ -68,7 +68,7 @@ func cleanup(filename string) {
 	err := os.Remove(filename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		panic("The specified file could not be deleted")
-		}
+	}
 }
 
 // Checks to see if the contents of a given yaml file, with name stored
