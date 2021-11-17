@@ -40,7 +40,13 @@ description: |-
 
 
   This controller is a component of the [AWS Controller for Kubernetes](https://github.com/aws/aws-controllers-k8s)
-  project. This project is currently in **developer preview**. 
+  project. This project is currently in **developer preview**.
+
+
+  **Pre-Installation Steps**
+
+
+  Please follow the following link: [Red Hat OpenShift](https://aws-controllers-k8s.github.io/community/docs/user-docs/openshift/)
 samples:
 - kind: ScalableTarget
   spec: '{}'
@@ -49,8 +55,8 @@ samples:
 - kind: ScheduledAction
   spec: '{}'
 maintainers:
-- name: "Your Team Name"
-  email: "your-team@example.com"
+- name: "application auto scaling maintainer team"
+  email: "ack-maintainers@amazon.com"
 links:
 - name: Amazon Application Auto Scaling User Guide
-  url: "https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html"
+  url: https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html
