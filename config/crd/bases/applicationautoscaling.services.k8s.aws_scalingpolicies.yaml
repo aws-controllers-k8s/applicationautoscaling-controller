@@ -47,8 +47,8 @@ spec:
                 description: "The policy type. This parameter is required if you are
                   creating a scaling policy. \n The following policy types are supported:
                   \n TargetTrackingScaling—Not supported for Amazon EMR \n StepScaling—Not
-                  supported for DynamoDB, Amazon Comprehend, Lambda, Amazon Keyspaces
-                  (for Apache Cassandra), or Amazon MSK. \n For more information,
+                  supported for DynamoDB, Amazon Comprehend, Lambda, Amazon Keyspaces,
+                  Amazon MSK, Amazon ElastiCache, or Neptune. \n For more information,
                   see Target tracking scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html)
                   and Step scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html)
                   in the Application Auto Scaling User Guide."
@@ -58,8 +58,8 @@ spec:
                   policy. This string consists of the resource type and unique identifier.
                   \n    * ECS service - The resource type is service and the unique
                   identifier    is the cluster name and service name. Example: service/default/sample-webapp.
-                  \n    * Spot Fleet request - The resource type is spot-fleet-request
-                  and the    unique identifier is the Spot Fleet request ID. Example:
+                  \n    * Spot Fleet - The resource type is spot-fleet-request and
+                  the unique    identifier is the Spot Fleet request ID. Example:
                   spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE. \n
                   \   * EMR cluster - The resource type is instancegroup and the unique
                   identifier    is the cluster ID and instance group ID. Example:
@@ -72,17 +72,16 @@ spec:
                   is the index name. Example: table/my-table/index/my-table-index.
                   \n    * Aurora DB cluster - The resource type is cluster and the
                   unique identifier    is the cluster name. Example: cluster:my-db-cluster.
-                  \n    * Amazon SageMaker endpoint variant - The resource type is
-                  variant and    the unique identifier is the resource ID. Example:
-                  endpoint/my-end-point/variant/KMeansClustering. \n    * Custom resources
-                  are not supported with a resource type. This parameter    must specify
-                  the OutputValue from the CloudFormation template stack used    to
-                  access the resources. The unique identifier is defined by the service
-                  \   provider. More information is available in our GitHub repository
-                  (https://github.com/aws/aws-auto-scaling-custom-resource). \n    *
-                  Amazon Comprehend document classification endpoint - The resource
-                  type    and unique identifier are specified using the endpoint ARN.
-                  Example: arn:aws:comprehend:us-west-2:123456789012:document-classifier-endpoint/EXAMPLE.
+                  \n    * SageMaker endpoint variant - The resource type is variant
+                  and the unique    identifier is the resource ID. Example: endpoint/my-end-point/variant/KMeansClustering.
+                  \n    * Custom resources are not supported with a resource type.
+                  This parameter    must specify the OutputValue from the CloudFormation
+                  template stack used    to access the resources. The unique identifier
+                  is defined by the service    provider. More information is available
+                  in our GitHub repository (https://github.com/aws/aws-auto-scaling-custom-resource).
+                  \n    * Amazon Comprehend document classification endpoint - The
+                  resource type    and unique identifier are specified using the endpoint
+                  ARN. Example: arn:aws:comprehend:us-west-2:123456789012:document-classifier-endpoint/EXAMPLE.
                   \n    * Amazon Comprehend entity recognizer endpoint - The resource
                   type and    unique identifier are specified using the endpoint ARN.
                   Example: arn:aws:comprehend:us-west-2:123456789012:entity-recognizer-endpoint/EXAMPLE.
@@ -93,15 +92,20 @@ spec:
                   resource type is table and the unique identifier    is the table
                   name. Example: keyspace/mykeyspace/table/mytable. \n    * Amazon
                   MSK cluster - The resource type and unique identifier are specified
-                  \   using the cluster ARN. Example: arn:aws:kafka:us-east-1:123456789012:cluster/demo-cluster-1/6357e0b2-0e6a-4b86-a0b4-70df934c2e31-5."
+                  \   using the cluster ARN. Example: arn:aws:kafka:us-east-1:123456789012:cluster/demo-cluster-1/6357e0b2-0e6a-4b86-a0b4-70df934c2e31-5.
+                  \n    * Amazon ElastiCache replication group - The resource type
+                  is replication-group    and the unique identifier is the replication
+                  group name. Example: replication-group/mycluster. \n    * Neptune
+                  cluster - The resource type is cluster and the unique identifier
+                  \   is the cluster name. Example: cluster:mycluster."
                 type: string
               scalableDimension:
                 description: "The scalable dimension. This string consists of the
                   service namespace, resource type, and scaling property. \n    *
                   ecs:service:DesiredCount - The desired task count of an ECS service.
-                  \n    * ec2:spot-fleet-request:TargetCapacity - The target capacity
-                  of a Spot    Fleet request. \n    * elasticmapreduce:instancegroup:InstanceCount
-                  - The instance count of    an EMR Instance Group. \n    * appstream:fleet:DesiredCapacity
+                  \n    * elasticmapreduce:instancegroup:InstanceCount - The instance
+                  count of    an EMR Instance Group. \n    * ec2:spot-fleet-request:TargetCapacity
+                  - The target capacity of a Spot    Fleet. \n    * appstream:fleet:DesiredCapacity
                   - The desired capacity of an AppStream    2.0 fleet. \n    * dynamodb:table:ReadCapacityUnits
                   - The provisioned read capacity for    a DynamoDB table. \n    *
                   dynamodb:table:WriteCapacityUnits - The provisioned write capacity
@@ -112,7 +116,7 @@ spec:
                   rds:cluster:ReadReplicaCount - The count of Aurora Replicas in an
                   Aurora    DB cluster. Available for Aurora MySQL-compatible edition
                   and Aurora PostgreSQL-compatible    edition. \n    * sagemaker:variant:DesiredInstanceCount
-                  - The number of EC2 instances    for an Amazon SageMaker model endpoint
+                  - The number of EC2 instances    for an SageMaker model endpoint
                   variant. \n    * custom-resource:ResourceType:Property - The scalable
                   dimension for a    custom resource provided by your own application
                   or service. \n    * comprehend:document-classifier-endpoint:DesiredInferenceUnits
@@ -125,12 +129,17 @@ spec:
                   for    an Amazon Keyspaces table. \n    * cassandra:table:WriteCapacityUnits
                   - The provisioned write capacity    for an Amazon Keyspaces table.
                   \n    * kafka:broker-storage:VolumeSize - The provisioned volume
-                  size (in GiB)    for brokers in an Amazon MSK cluster."
+                  size (in GiB)    for brokers in an Amazon MSK cluster. \n    * elasticache:replication-group:NodeGroups
+                  - The number of node groups    for an Amazon ElastiCache replication
+                  group. \n    * elasticache:replication-group:Replicas - The number
+                  of replicas per    node group for an Amazon ElastiCache replication
+                  group. \n    * neptune:cluster:ReadReplicaCount - The count of read
+                  replicas in an    Amazon Neptune DB cluster."
                 type: string
               serviceNamespace:
-                description: The namespace of the AWS service that provides the resource.
-                  For a resource provided by your own application or service, use
-                  custom-resource instead.
+                description: The namespace of the Amazon Web Services service that
+                  provides the resource. For a resource provided by your own application
+                  or service, use custom-resource instead.
                 type: string
               stepScalingPolicyConfiguration:
                 description: "A step scaling policy. \n This parameter is required
@@ -189,8 +198,8 @@ spec:
                     description: "Represents a CloudWatch metric of your choosing
                       for a target tracking scaling policy to use with Application
                       Auto Scaling. \n For information about the available metrics
-                      for a service, see AWS Services That Publish CloudWatch Metrics
-                      (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+                      for a service, see Amazon Web Services Services That Publish
+                      CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
                       in the Amazon CloudWatch User Guide. \n To create your customized
                       metric specification: \n    * Add values for each required parameter
                       from CloudWatch. You can use    an existing metric, or a new
@@ -230,11 +239,11 @@ spec:
                   predefinedMetricSpecification:
                     description: "Represents a predefined metric for a target tracking
                       scaling policy to use with Application Auto Scaling. \n Only
-                      the AWS services that you're using send metrics to Amazon CloudWatch.
-                      To determine whether a desired metric already exists by looking
-                      up its namespace and dimension using the CloudWatch metrics
-                      dashboard in the console, follow the procedure in Building dashboards
-                      with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
+                      the Amazon Web Services that you're using send metrics to Amazon
+                      CloudWatch. To determine whether a desired metric already exists
+                      by looking up its namespace and dimension using the CloudWatch
+                      metrics dashboard in the console, follow the procedure in Building
+                      dashboards with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
                       in the Application Auto Scaling User Guide."
                     properties:
                       predefinedMetricType:
