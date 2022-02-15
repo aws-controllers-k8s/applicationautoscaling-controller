@@ -37,8 +37,8 @@ type Alarm struct {
 // Represents a CloudWatch metric of your choosing for a target tracking scaling
 // policy to use with Application Auto Scaling.
 //
-// For information about the available metrics for a service, see AWS Services
-// That Publish CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+// For information about the available metrics for a service, see Amazon Web
+// Services Services That Publish CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
 // in the Amazon CloudWatch User Guide.
 //
 // To create your customized metric specification:
@@ -72,7 +72,7 @@ type MetricDimension struct {
 // Represents a predefined metric for a target tracking scaling policy to use
 // with Application Auto Scaling.
 //
-// Only the AWS services that you're using send metrics to Amazon CloudWatch.
+// Only the Amazon Web Services that you're using send metrics to Amazon CloudWatch.
 // To determine whether a desired metric already exists by looking up its namespace
 // and dimension using the CloudWatch metrics dashboard in the console, follow
 // the procedure in Building dashboards with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
@@ -210,8 +210,8 @@ type TargetTrackingScalingPolicyConfiguration struct {
 	// Represents a CloudWatch metric of your choosing for a target tracking scaling
 	// policy to use with Application Auto Scaling.
 	//
-	// For information about the available metrics for a service, see AWS Services
-	// That Publish CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+	// For information about the available metrics for a service, see Amazon Web
+	// Services Services That Publish CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
 	// in the Amazon CloudWatch User Guide.
 	//
 	// To create your customized metric specification:
@@ -233,7 +233,7 @@ type TargetTrackingScalingPolicyConfiguration struct {
 	// Represents a predefined metric for a target tracking scaling policy to use
 	// with Application Auto Scaling.
 	//
-	// Only the AWS services that you're using send metrics to Amazon CloudWatch.
+	// Only the Amazon Web Services that you're using send metrics to Amazon CloudWatch.
 	// To determine whether a desired metric already exists by looking up its namespace
 	// and dimension using the CloudWatch metrics dashboard in the console, follow
 	// the procedure in Building dashboards with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
