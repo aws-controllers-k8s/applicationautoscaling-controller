@@ -8,5 +8,5 @@ roleRef:
   name: ack-applicationautoscaling-controller
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: ack-applicationautoscaling-controller
   namespace: ack-system

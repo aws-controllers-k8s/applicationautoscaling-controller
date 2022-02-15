@@ -39,7 +39,7 @@ type ScalingPolicySpec struct {
 	// TargetTrackingScaling—Not supported for Amazon EMR
 	//
 	// StepScaling—Not supported for DynamoDB, Amazon Comprehend, Lambda, Amazon
-	// Keyspaces (for Apache Cassandra), or Amazon MSK.
+	// Keyspaces, Amazon MSK, Amazon ElastiCache, or Neptune.
 	//
 	// For more information, see Target tracking scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html)
 	// and Step scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html)
@@ -51,8 +51,8 @@ type ScalingPolicySpec struct {
 	//    * ECS service - The resource type is service and the unique identifier
 	//    is the cluster name and service name. Example: service/default/sample-webapp.
 	//
-	//    * Spot Fleet request - The resource type is spot-fleet-request and the
-	//    unique identifier is the Spot Fleet request ID. Example: spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE.
+	//    * Spot Fleet - The resource type is spot-fleet-request and the unique
+	//    identifier is the Spot Fleet request ID. Example: spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE.
 	//
 	//    * EMR cluster - The resource type is instancegroup and the unique identifier
 	//    is the cluster ID and instance group ID. Example: instancegroup/j-2EEZNYKUA1NTV/ig-1791Y4E1L8YI0.
@@ -69,8 +69,8 @@ type ScalingPolicySpec struct {
 	//    * Aurora DB cluster - The resource type is cluster and the unique identifier
 	//    is the cluster name. Example: cluster:my-db-cluster.
 	//
-	//    * Amazon SageMaker endpoint variant - The resource type is variant and
-	//    the unique identifier is the resource ID. Example: endpoint/my-end-point/variant/KMeansClustering.
+	//    * SageMaker endpoint variant - The resource type is variant and the unique
+	//    identifier is the resource ID. Example: endpoint/my-end-point/variant/KMeansClustering.
 	//
 	//    * Custom resources are not supported with a resource type. This parameter
 	//    must specify the OutputValue from the CloudFormation template stack used
@@ -93,6 +93,12 @@ type ScalingPolicySpec struct {
 	//
 	//    * Amazon MSK cluster - The resource type and unique identifier are specified
 	//    using the cluster ARN. Example: arn:aws:kafka:us-east-1:123456789012:cluster/demo-cluster-1/6357e0b2-0e6a-4b86-a0b4-70df934c2e31-5.
+	//
+	//    * Amazon ElastiCache replication group - The resource type is replication-group
+	//    and the unique identifier is the replication group name. Example: replication-group/mycluster.
+	//
+	//    * Neptune cluster - The resource type is cluster and the unique identifier
+	//    is the cluster name. Example: cluster:mycluster.
 	// +kubebuilder:validation:Required
 	ResourceID *string `json:"resourceID"`
 	// The scalable dimension. This string consists of the service namespace, resource
@@ -100,11 +106,11 @@ type ScalingPolicySpec struct {
 	//
 	//    * ecs:service:DesiredCount - The desired task count of an ECS service.
 	//
-	//    * ec2:spot-fleet-request:TargetCapacity - The target capacity of a Spot
-	//    Fleet request.
-	//
 	//    * elasticmapreduce:instancegroup:InstanceCount - The instance count of
 	//    an EMR Instance Group.
+	//
+	//    * ec2:spot-fleet-request:TargetCapacity - The target capacity of a Spot
+	//    Fleet.
 	//
 	//    * appstream:fleet:DesiredCapacity - The desired capacity of an AppStream
 	//    2.0 fleet.
@@ -126,7 +132,7 @@ type ScalingPolicySpec struct {
 	//    edition.
 	//
 	//    * sagemaker:variant:DesiredInstanceCount - The number of EC2 instances
-	//    for an Amazon SageMaker model endpoint variant.
+	//    for an SageMaker model endpoint variant.
 	//
 	//    * custom-resource:ResourceType:Property - The scalable dimension for a
 	//    custom resource provided by your own application or service.
@@ -149,10 +155,20 @@ type ScalingPolicySpec struct {
 	//
 	//    * kafka:broker-storage:VolumeSize - The provisioned volume size (in GiB)
 	//    for brokers in an Amazon MSK cluster.
+	//
+	//    * elasticache:replication-group:NodeGroups - The number of node groups
+	//    for an Amazon ElastiCache replication group.
+	//
+	//    * elasticache:replication-group:Replicas - The number of replicas per
+	//    node group for an Amazon ElastiCache replication group.
+	//
+	//    * neptune:cluster:ReadReplicaCount - The count of read replicas in an
+	//    Amazon Neptune DB cluster.
 	// +kubebuilder:validation:Required
 	ScalableDimension *string `json:"scalableDimension"`
-	// The namespace of the AWS service that provides the resource. For a resource
-	// provided by your own application or service, use custom-resource instead.
+	// The namespace of the Amazon Web Services service that provides the resource.
+	// For a resource provided by your own application or service, use custom-resource
+	// instead.
 	// +kubebuilder:validation:Required
 	ServiceNamespace *string `json:"serviceNamespace"`
 	// A step scaling policy.

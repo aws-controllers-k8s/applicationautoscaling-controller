@@ -44,23 +44,27 @@ const (
 type MetricType string
 
 const (
-	MetricType_DynamoDBReadCapacityUtilization          MetricType = "DynamoDBReadCapacityUtilization"
-	MetricType_DynamoDBWriteCapacityUtilization         MetricType = "DynamoDBWriteCapacityUtilization"
-	MetricType_ALBRequestCountPerTarget                 MetricType = "ALBRequestCountPerTarget"
-	MetricType_RDSReaderAverageCPUUtilization           MetricType = "RDSReaderAverageCPUUtilization"
-	MetricType_RDSReaderAverageDatabaseConnections      MetricType = "RDSReaderAverageDatabaseConnections"
-	MetricType_EC2SpotFleetRequestAverageCPUUtilization MetricType = "EC2SpotFleetRequestAverageCPUUtilization"
-	MetricType_EC2SpotFleetRequestAverageNetworkIn      MetricType = "EC2SpotFleetRequestAverageNetworkIn"
-	MetricType_EC2SpotFleetRequestAverageNetworkOut     MetricType = "EC2SpotFleetRequestAverageNetworkOut"
-	MetricType_SageMakerVariantInvocationsPerInstance   MetricType = "SageMakerVariantInvocationsPerInstance"
-	MetricType_ECSServiceAverageCPUUtilization          MetricType = "ECSServiceAverageCPUUtilization"
-	MetricType_ECSServiceAverageMemoryUtilization       MetricType = "ECSServiceAverageMemoryUtilization"
-	MetricType_AppStreamAverageCapacityUtilization      MetricType = "AppStreamAverageCapacityUtilization"
-	MetricType_ComprehendInferenceUtilization           MetricType = "ComprehendInferenceUtilization"
-	MetricType_LambdaProvisionedConcurrencyUtilization  MetricType = "LambdaProvisionedConcurrencyUtilization"
-	MetricType_CassandraReadCapacityUtilization         MetricType = "CassandraReadCapacityUtilization"
-	MetricType_CassandraWriteCapacityUtilization        MetricType = "CassandraWriteCapacityUtilization"
-	MetricType_KafkaBrokerStorageUtilization            MetricType = "KafkaBrokerStorageUtilization"
+	MetricType_DynamoDBReadCapacityUtilization                         MetricType = "DynamoDBReadCapacityUtilization"
+	MetricType_DynamoDBWriteCapacityUtilization                        MetricType = "DynamoDBWriteCapacityUtilization"
+	MetricType_ALBRequestCountPerTarget                                MetricType = "ALBRequestCountPerTarget"
+	MetricType_RDSReaderAverageCPUUtilization                          MetricType = "RDSReaderAverageCPUUtilization"
+	MetricType_RDSReaderAverageDatabaseConnections                     MetricType = "RDSReaderAverageDatabaseConnections"
+	MetricType_EC2SpotFleetRequestAverageCPUUtilization                MetricType = "EC2SpotFleetRequestAverageCPUUtilization"
+	MetricType_EC2SpotFleetRequestAverageNetworkIn                     MetricType = "EC2SpotFleetRequestAverageNetworkIn"
+	MetricType_EC2SpotFleetRequestAverageNetworkOut                    MetricType = "EC2SpotFleetRequestAverageNetworkOut"
+	MetricType_SageMakerVariantInvocationsPerInstance                  MetricType = "SageMakerVariantInvocationsPerInstance"
+	MetricType_ECSServiceAverageCPUUtilization                         MetricType = "ECSServiceAverageCPUUtilization"
+	MetricType_ECSServiceAverageMemoryUtilization                      MetricType = "ECSServiceAverageMemoryUtilization"
+	MetricType_AppStreamAverageCapacityUtilization                     MetricType = "AppStreamAverageCapacityUtilization"
+	MetricType_ComprehendInferenceUtilization                          MetricType = "ComprehendInferenceUtilization"
+	MetricType_LambdaProvisionedConcurrencyUtilization                 MetricType = "LambdaProvisionedConcurrencyUtilization"
+	MetricType_CassandraReadCapacityUtilization                        MetricType = "CassandraReadCapacityUtilization"
+	MetricType_CassandraWriteCapacityUtilization                       MetricType = "CassandraWriteCapacityUtilization"
+	MetricType_KafkaBrokerStorageUtilization                           MetricType = "KafkaBrokerStorageUtilization"
+	MetricType_ElastiCachePrimaryEngineCPUUtilization                  MetricType = "ElastiCachePrimaryEngineCPUUtilization"
+	MetricType_ElastiCacheReplicaEngineCPUUtilization                  MetricType = "ElastiCacheReplicaEngineCPUUtilization"
+	MetricType_ElastiCacheDatabaseMemoryUsageCountedForEvictPercentage MetricType = "ElastiCacheDatabaseMemoryUsageCountedForEvictPercentage"
+	MetricType_NeptuneReaderAverageCPUUtilization                      MetricType = "NeptuneReaderAverageCPUUtilization"
 )
 
 type PolicyType string
@@ -90,6 +94,9 @@ const (
 	ScalableDimension_cassandra_table_ReadCapacityUnits                             ScalableDimension = "cassandra:table:ReadCapacityUnits"
 	ScalableDimension_cassandra_table_WriteCapacityUnits                            ScalableDimension = "cassandra:table:WriteCapacityUnits"
 	ScalableDimension_kafka_broker_storage_VolumeSize                               ScalableDimension = "kafka:broker-storage:VolumeSize"
+	ScalableDimension_elasticache_replication_group_NodeGroups                      ScalableDimension = "elasticache:replication-group:NodeGroups"
+	ScalableDimension_elasticache_replication_group_Replicas                        ScalableDimension = "elasticache:replication-group:Replicas"
+	ScalableDimension_neptune_cluster_ReadReplicaCount                              ScalableDimension = "neptune:cluster:ReadReplicaCount"
 )
 
 type ScalingActivityStatusCode string
@@ -118,4 +125,6 @@ const (
 	ServiceNamespace_lambda           ServiceNamespace = "lambda"
 	ServiceNamespace_cassandra        ServiceNamespace = "cassandra"
 	ServiceNamespace_kafka            ServiceNamespace = "kafka"
+	ServiceNamespace_elasticache      ServiceNamespace = "elasticache"
+	ServiceNamespace_neptune          ServiceNamespace = "neptune"
 )
