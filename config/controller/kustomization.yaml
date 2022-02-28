@@ -6,4 +6,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: public.ecr.aws/aws-controllers-k8s/applicationautoscaling-controller
-  newTag: v0.2.4
+  newTag: v0.2.5
