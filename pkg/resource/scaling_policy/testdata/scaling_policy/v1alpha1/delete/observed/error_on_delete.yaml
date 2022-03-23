@@ -19,6 +19,7 @@ status:
   ackResourceMetadata:
     arn: arn:aws:autoscaling:us-west-2:12345678910:scalingPolicy:12345678910:resource/sagemaker/endpoint/unit-testing-endpoint/variant/variant-1:policyName/SageMakerEndpointInvocationScalingPolicy
     ownerAccountID: ""
+    region: ""
   alarms:
   - alarmARN: arn:aws:cloudwatch:us-west-2:12345678910:alarm:TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910
     alarmName: TargetTracking-endpoint/unit-testing-endpoint/variant/variant-1-AlarmHigh-12345678910

@@ -17,4 +17,5 @@ spec:
 status:
   ackResourceMetadata:
     ownerAccountID: ""
+    region: ""
   conditions: []
