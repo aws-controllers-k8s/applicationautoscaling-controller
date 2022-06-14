@@ -42,6 +42,8 @@ resources:
       RoleARN:
         late_initialize:
           min_backoff_seconds: 5
+    tags:
+      ignore: true
   ScalingPolicy:
     hooks:
       sdk_read_many_post_set_output:
@@ -63,6 +65,8 @@ resources:
         from:
           operation: DescribeScalingPolicies
           path: ScalingPolicies..CreationTime
+    tags:
+      ignore: true
 ignore:
     resource_names:
       - ScheduledAction
