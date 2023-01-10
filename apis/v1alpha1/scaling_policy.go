@@ -28,6 +28,7 @@ import (
 // see Getting started with Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/getting-started.html)
 // in the Application Auto Scaling User Guide.
 type ScalingPolicySpec struct {
+
 	// The name of the scaling policy.
 	// +kubebuilder:validation:Required
 	PolicyName *string `json:"policyName"`

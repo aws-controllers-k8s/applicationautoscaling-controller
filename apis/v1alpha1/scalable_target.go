@@ -24,6 +24,7 @@ import (
 //
 // Represents a scalable target.
 type ScalableTargetSpec struct {
+
 	// The maximum value that you plan to scale out to. When a scaling policy is
 	// in effect, Application Auto Scaling can scale out (expand) as needed to the
 	// maximum capacity limit in response to changing demand. This property is required
