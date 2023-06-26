@@ -67,20 +67,34 @@ class TestScalingPolicy:
         return len(targets["ScalingPolicies"]) == 1
 
     def test_smoke(self, applicationautoscaling_client):
-        (reference, policy) = self._generate_dynamodb_policy(get_bootstrap_resources())
-        resource = k8s.create_custom_resource(reference, policy)
-        resource = k8s.wait_resource_consumed_by_controller(reference)
-        assert k8s.get_resource_exists(reference)
+        (reference_a, policy_a) = self._generate_dynamodb_policy(get_bootstrap_resources())
+        (reference_b, policy_b) = self._generate_dynamodb_policy(get_bootstrap_resources())
 
-        policyName = policy["spec"].get("policyName")
-        assert policyName is not None
+        resource = k8s.create_custom_resource(reference_a, policy_a)
+        resource = k8s.wait_resource_consumed_by_controller(reference_a)
+        assert k8s.get_resource_exists(reference_a)
+        
+        resource = k8s.create_custom_resource(reference_b, policy_b)
+        resource = k8s.wait_resource_consumed_by_controller(reference_b)
+        assert k8s.get_resource_exists(reference_b)
+
+        policyNameA = policy_a["spec"].get("policyName")
+        assert policyNameA is not None
+        policyNameB = policy_b["spec"].get("policyName")
+        assert policyNameB is not None
 
         exists = self._get_dynamodb_scaling_policy_exists(
-            applicationautoscaling_client, policyName
+            applicationautoscaling_client, policyNameA,
+        )
+        assert exists
+        exists = self._get_dynamodb_scaling_policy_exists(
+            applicationautoscaling_client, policyNameB,
         )
         assert exists
 
-        _, deleted = k8s.delete_custom_resource(reference)
+        _, deleted = k8s.delete_custom_resource(reference_a)
+        assert deleted is True
+        _, deleted = k8s.delete_custom_resource(reference_b)
         assert deleted is True
 
         exists = self._get_dynamodb_scaling_policy_exists(

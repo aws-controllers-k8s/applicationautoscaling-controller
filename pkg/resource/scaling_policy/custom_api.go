@@ -14,9 +14,12 @@
 package scaling_policy
 
 import (
-	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"context"
 	"time"
+
+	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
+	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // customSetLastModifiedTimeToCreationTime sets the LastModifiedTime field to the creationTime
@@ -30,4 +33,19 @@ func (rm *resourceManager) customSetLastModifiedTimeToCreationTime(ko *svcapityp
 func (rm *resourceManager) customSetLastModifiedTimeToCurrentTime(ko *svcapitypes.ScalingPolicy) {
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
+}
+
+// customDescribeScalingPolicies sets the policy name in DescribeScalingPoliciesInput
+func (rm *resourceManager) customDescribeScalingPolicies(
+	ctx context.Context,
+	latest *resource,
+	input *svcsdk.DescribeScalingPoliciesInput,
+) {
+	spec := latest.ko.Spec
+
+	var policyNames []*string
+	if spec.PolicyName != nil {
+		policyNames = append(policyNames, spec.PolicyName)
+		input.SetPolicyNames(policyNames)
+	}
 }

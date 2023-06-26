@@ -50,6 +50,8 @@ resources:
         code: rm.customSetLastModifiedTimeToCreationTime(ko)
       sdk_update_post_set_output:
         code: rm.customSetLastModifiedTimeToCurrentTime(ko)
+      sdk_read_many_post_build_request:
+        code: rm.customDescribeScalingPolicies(ctx, r, input)
     fields:
       ResourceID:
         is_primary_key: true

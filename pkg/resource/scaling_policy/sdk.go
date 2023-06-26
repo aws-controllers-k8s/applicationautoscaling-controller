@@ -72,6 +72,7 @@ func (rm *resourceManager) sdkFind(
 	if err != nil {
 		return nil, err
 	}
+	rm.customDescribeScalingPolicies(ctx, r, input)
 	var resp *svcsdk.DescribeScalingPoliciesOutput
 	resp, err = rm.sdkapi.DescribeScalingPoliciesWithContext(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalingPolicies", err)
