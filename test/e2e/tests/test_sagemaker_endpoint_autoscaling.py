@@ -252,7 +252,7 @@ class TestSageMakerEndpointAutoscaling:
             )
             return None
 
-    def test_create(
+    def create_test(
         self,
         applicationautoscaling_client,
         generate_sagemaker_policy_A,
@@ -300,7 +300,7 @@ class TestSageMakerEndpointAutoscaling:
             == policy_description_B[0]["PolicyARN"]
         )
 
-    def test_update(self, applicationautoscaling_client, generate_sagemaker_policy_A):
+    def update_test(self, applicationautoscaling_client, generate_sagemaker_policy_A):
         (
             resource_id,
             target_reference,
@@ -349,7 +349,7 @@ class TestSageMakerEndpointAutoscaling:
             == updatedTargetValue
         )
 
-    def test_delete(
+    def delete_test(
         self,
         applicationautoscaling_client,
         generate_sagemaker_policy_A,
@@ -396,3 +396,22 @@ class TestSageMakerEndpointAutoscaling:
             policy_spec_B["spec"]["policyName"],
         )
         assert len(policy_description_B) == 0
+
+    # enforce test order and fixture scope
+    def test_driver(
+        self,
+        applicationautoscaling_client,
+        generate_sagemaker_policy_A,
+        generate_sagemaker_policy_B,
+    ):
+        self.create_test(
+            applicationautoscaling_client,
+            generate_sagemaker_policy_A,
+            generate_sagemaker_policy_B,
+        )
+        self.update_test(applicationautoscaling_client, generate_sagemaker_policy_A)
+        self.delete_test(
+            applicationautoscaling_client,
+            generate_sagemaker_policy_A,
+            generate_sagemaker_policy_B,
+        )
