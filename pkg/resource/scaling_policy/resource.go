@@ -98,7 +98,7 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 	if f5ok {
 		r.ko.Spec.ServiceNamespace = &f5
 	}
-
+	// TODO: manual changes need to remove before merging PR
 	f6, f6ok := identifier.AdditionalKeys["policyName"]
 	if f6ok {
 		r.ko.Spec.PolicyName = &f6

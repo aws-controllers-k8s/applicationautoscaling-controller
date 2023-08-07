@@ -43,7 +43,7 @@ CRD_GROUP = "applicationautoscaling.services.k8s.aws"
 CRD_VERSION = "v1alpha1"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def name_suffix():
     return random_suffix_name("sagemaker-endpoint", 32)
 
@@ -53,7 +53,7 @@ def applicationautoscaling_client():
     return boto3.client("application-autoscaling")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def sagemaker_endpoint(name_suffix):
     model_name = name_suffix + "-model"
     endpoint_config_name = name_suffix + "-config"
@@ -62,7 +62,9 @@ def sagemaker_endpoint(name_suffix):
     resource_id = f"endpoint/{endpoint_name}/variant/variant-1"
 
     _, _ = sagemaker_make_model(model_name)
-    _, _ = sagemaker_make_endpoint_config(model_name, variant_name, endpoint_config_name)
+    _, _ = sagemaker_make_endpoint_config(
+        model_name, variant_name, endpoint_config_name
+    )
     _, _ = sagemaker_make_endpoint(endpoint_name, endpoint_config_name)
 
     wait_sagemaker_endpoint_status(endpoint_name, ENDPOINT_STATUS_INSERVICE)
@@ -74,7 +76,7 @@ def sagemaker_endpoint(name_suffix):
     sagemaker_client().delete_model(ModelName=model_name)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def register_scalable_target(sagemaker_endpoint):
     resource_id = sagemaker_endpoint
     _ = sagemaker_endpoint_register_scalable_target(resource_id)
@@ -83,7 +85,7 @@ def register_scalable_target(sagemaker_endpoint):
     sagemaker_endpoint_deregister_scalable_target(resource_id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def put_scaling_policy(register_scalable_target):
     resource_id = register_scalable_target
     policy_name = random_suffix_name("policy_name", 32)
@@ -93,7 +95,7 @@ def put_scaling_policy(register_scalable_target):
     sagemaker_endpoint_delete_scaling_policy(resource_id, policy_name)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def adopt_scalable_target(register_scalable_target):
     resource_id = register_scalable_target
     target_resource_name = random_suffix_name("sagemaker-scalable-target", 32)
@@ -117,7 +119,7 @@ def adopt_scalable_target(register_scalable_target):
         assert deleted
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def adopt_scaling_policy(adopt_scalable_target, put_scaling_policy):
     resource_id, adopted_target_reference = adopt_scalable_target
     _, policy_name = put_scaling_policy

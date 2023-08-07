@@ -41,7 +41,7 @@ POLICY_RESOURCE_PLURAL = "scalingpolicies"
 ENDPOINT_STATUS_INSERVICE = "InService"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def name_suffix():
     return random_suffix_name("sagemaker-endpoint", 32)
 
@@ -51,7 +51,7 @@ def applicationautoscaling_client():
     return boto3.client("application-autoscaling")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def sagemaker_endpoint(name_suffix):
     model_name = name_suffix + "-model"
     endpoint_config_name = name_suffix + "-config"
@@ -76,7 +76,7 @@ def sagemaker_endpoint(name_suffix):
     sagemaker_client().delete_model(ModelName=model_name)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def generate_sagemaker_target(sagemaker_endpoint):
     resource_id, endpoint_name, variant_name = sagemaker_endpoint
     target_resource_name = random_suffix_name("sagemaker-scalable-target", 32)
@@ -98,17 +98,26 @@ def generate_sagemaker_target(sagemaker_endpoint):
 
     assert target_resource is not None
 
-    yield (resource_id, endpoint_name, variant_name, target_reference, target_spec, target_resource)
+    yield (
+        resource_id,
+        endpoint_name,
+        variant_name,
+        target_reference,
+        target_spec,
+        target_resource,
+    )
 
     if k8s.get_resource_exists(target_reference):
         _, deleted = k8s.delete_custom_resource(target_reference)
         assert deleted
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def generate_sagemaker_policy_A(generate_sagemaker_target):
     (
-        resource_id, _, _,
+        resource_id,
+        _,
+        _,
         target_reference,
         target_spec,
         target_resource,
@@ -147,7 +156,7 @@ def generate_sagemaker_policy_A(generate_sagemaker_target):
         assert deleted
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def generate_sagemaker_policy_B(generate_sagemaker_target):
     (
         resource_id,
@@ -188,6 +197,7 @@ def generate_sagemaker_policy_B(generate_sagemaker_target):
     if k8s.get_resource_exists(policy_reference):
         _, deleted = k8s.delete_custom_resource(policy_reference)
         assert deleted
+
 
 @service_marker
 @pytest.mark.canary
@@ -233,8 +243,7 @@ class TestSageMakerEndpointAutoscaling:
             policies = applicationautoscaling_client.describe_scaling_policies(
                 ServiceNamespace="sagemaker",
                 ResourceId=resource_id,
-                PolicyNames=[policy_name]
-
+                PolicyNames=[policy_name],
             )
             return policies["ScalingPolicies"]
         except botocore.exceptions.ClientError as error:
@@ -243,7 +252,12 @@ class TestSageMakerEndpointAutoscaling:
             )
             return None
 
-    def test_create(self, applicationautoscaling_client, generate_sagemaker_policy_A, generate_sagemaker_policy_B):
+    def test_create(
+        self,
+        applicationautoscaling_client,
+        generate_sagemaker_policy_A,
+        generate_sagemaker_policy_B,
+    ):
         (
             resource_id,
             target_reference,
@@ -253,7 +267,7 @@ class TestSageMakerEndpointAutoscaling:
             policy_spec_A,
             policy_reference_A,
         ) = generate_sagemaker_policy_A
-        
+
         (resource_id, policy_resource_B, policy_spec_B, _) = generate_sagemaker_policy_B
 
         target_description = self.get_sagemaker_scalable_target_description(
@@ -265,19 +279,25 @@ class TestSageMakerEndpointAutoscaling:
         assert k8s.get_resource_arn(policy_resource_B) is not None
 
         policy_description_A = self.get_sagemaker_scaling_policy_description(
-            applicationautoscaling_client, resource_id, policy_spec_A["spec"]["policyName"]
+            applicationautoscaling_client,
+            resource_id,
+            policy_spec_A["spec"]["policyName"],
         )
         assert len(policy_description_A) > 0
         assert (
-            k8s.get_resource_arn(policy_resource_A) == policy_description_A[0]["PolicyARN"]
+            k8s.get_resource_arn(policy_resource_A)
+            == policy_description_A[0]["PolicyARN"]
         )
 
         policy_description_B = self.get_sagemaker_scaling_policy_description(
-            applicationautoscaling_client, resource_id, policy_spec_B["spec"]["policyName"]
+            applicationautoscaling_client,
+            resource_id,
+            policy_spec_B["spec"]["policyName"],
         )
         assert len(policy_description_B) > 0
         assert (
-            k8s.get_resource_arn(policy_resource_B) == policy_description_B[0]["PolicyARN"]
+            k8s.get_resource_arn(policy_resource_B)
+            == policy_description_B[0]["PolicyARN"]
         )
 
     def test_update(self, applicationautoscaling_client, generate_sagemaker_policy_A):
@@ -317,7 +337,9 @@ class TestSageMakerEndpointAutoscaling:
         assert self.wait_until_update(policy_reference, last_modified_time) == True
 
         updated_policy_description = self.get_sagemaker_scaling_policy_description(
-            applicationautoscaling_client, resource_id, policy_spec["spec"]["policyName"]
+            applicationautoscaling_client,
+            resource_id,
+            policy_spec["spec"]["policyName"],
         )
         assert updated_policy_description is not None
         assert (
@@ -327,7 +349,12 @@ class TestSageMakerEndpointAutoscaling:
             == updatedTargetValue
         )
 
-    def test_delete(self, applicationautoscaling_client, generate_sagemaker_policy_A, generate_sagemaker_policy_B):
+    def test_delete(
+        self,
+        applicationautoscaling_client,
+        generate_sagemaker_policy_A,
+        generate_sagemaker_policy_B,
+    ):
         (
             resource_id,
             target_reference,
@@ -357,11 +384,15 @@ class TestSageMakerEndpointAutoscaling:
 
         # TODO: Ideally this check should pass after line 188 itself; but it requires the scalabletarget to be deleted too.
         policy_description_A = self.get_sagemaker_scaling_policy_description(
-            applicationautoscaling_client, resource_id, policy_spec_A["spec"]["policyName"]
+            applicationautoscaling_client,
+            resource_id,
+            policy_spec_A["spec"]["policyName"],
         )
         assert len(policy_description_A) == 0
 
         policy_description_B = self.get_sagemaker_scaling_policy_description(
-            applicationautoscaling_client, resource_id, policy_spec_B["spec"]["policyName"]
+            applicationautoscaling_client,
+            resource_id,
+            policy_spec_B["spec"]["policyName"],
         )
         assert len(policy_description_B) == 0
