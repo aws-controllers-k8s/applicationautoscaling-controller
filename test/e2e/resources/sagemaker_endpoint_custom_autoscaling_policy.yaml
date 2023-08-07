@@ -1,0 +1,24 @@
+apiVersion: applicationautoscaling.services.k8s.aws/v1alpha1
+kind: ScalingPolicy
+metadata:
+  name: $SCALINGPOLICY_NAME
+spec:
+  policyName: $SCALINGPOLICY_NAME
+  policyType: TargetTrackingScaling
+  resourceID: $RESOURCE_ID
+  scalableDimension: "sagemaker:variant:DesiredInstanceCount"
+  serviceNamespace: sagemaker
+  targetTrackingScalingPolicyConfiguration:
+    targetValue: 60
+    scaleInCooldown: 700
+    scaleOutCooldown: 300
+    customizedMetricSpecification:
+      metricName: CPUUtilization
+      namespace: /aws/sagemaker/Endpoints
+      dimensions:
+          - name: EndpointName
+            value: $ENDPOINT_NAME
+          - name: VariantName
+            value: $VARIANT_NAME
+      statistic: Average
+      unit: Percent

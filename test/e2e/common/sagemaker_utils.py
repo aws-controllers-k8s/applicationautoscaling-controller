@@ -85,12 +85,12 @@ def sagemaker_make_model(model_name):
     return model_input, model_response
 
 
-def sagemaker_make_endpoint_config(model_name, endpoint_config_name):
+def sagemaker_make_endpoint_config(model_name, variant_name, endpoint_config_name):
     endpoint_config_input = {
         "EndpointConfigName": endpoint_config_name,
         "ProductionVariants": [
             {
-                "VariantName": "variant-1",
+                "VariantName": variant_name,
                 "ModelName": model_name,
                 "InitialInstanceCount": 1,
                 "InstanceType": REPLACEMENT_VALUES["ENDPOINT_INSTANCE_TYPE"],

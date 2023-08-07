@@ -14,9 +14,12 @@
 package scaling_policy
 
 import (
-	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"context"
 	"time"
+
+	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
+	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // customSetLastModifiedTimeToCreationTime sets the LastModifiedTime field to the creationTime
@@ -30,4 +33,30 @@ func (rm *resourceManager) customSetLastModifiedTimeToCreationTime(ko *svcapityp
 func (rm *resourceManager) customSetLastModifiedTimeToCurrentTime(ko *svcapitypes.ScalingPolicy) {
 	currentTime := metav1.Time{Time: time.Now().UTC()}
 	ko.Status.LastModifiedTime = &currentTime
+}
+
+// customSetDescribeScalingPoliciesInput sets the policy name in DescribeScalingPoliciesInput
+func (rm *resourceManager) customSetDescribeScalingPoliciesInput(
+	ctx context.Context,
+	latest *resource,
+	input *svcsdk.DescribeScalingPoliciesInput,
+) {
+	spec := latest.ko.Spec
+
+	var policyNames []*string
+	if spec.PolicyName != nil {
+		policyNames = append(policyNames, spec.PolicyName)
+		input.SetPolicyNames(policyNames)
+	}
+}
+
+// customCheckRequiredFieldsMissing returns true if there are any fields
+// for the ReadOne Input shape that are required but not present in the
+// resource's Spec or Status
+func (rm *resourceManager) customCheckRequiredFieldsMissing(
+	r *resource,
+) bool {
+	if r.ko.Spec.ResourceID == nil || r.ko.Spec.ScalableDimension == nil || r.ko.Spec.ServiceNamespace == nil || r.ko.Spec.PolicyName == nil {
+		return true
+	}
 }

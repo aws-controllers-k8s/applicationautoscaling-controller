@@ -7,6 +7,8 @@ spec:
     nameOrID: $RESOURCE_ID
     additionalKeys:
       serviceNamespace: sagemaker
+      scalableDimension: sagemaker:variant:DesiredInstanceCount
+      policyName: $POLICY_NAME
   kubernetes:
     group: applicationautoscaling.services.k8s.aws
     kind: ScalingPolicy

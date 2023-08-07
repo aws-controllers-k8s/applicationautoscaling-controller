@@ -58,10 +58,11 @@ def sagemaker_endpoint(name_suffix):
     model_name = name_suffix + "-model"
     endpoint_config_name = name_suffix + "-config"
     endpoint_name = name_suffix
+    variant_name = "variant-1"
     resource_id = f"endpoint/{endpoint_name}/variant/variant-1"
 
     _, _ = sagemaker_make_model(model_name)
-    _, _ = sagemaker_make_endpoint_config(model_name, endpoint_config_name)
+    _, _ = sagemaker_make_endpoint_config(model_name, variant_name, endpoint_config_name)
     _, _ = sagemaker_make_endpoint(endpoint_name, endpoint_config_name)
 
     wait_sagemaker_endpoint_status(endpoint_name, ENDPOINT_STATUS_INSERVICE)
@@ -88,13 +89,13 @@ def put_scaling_policy(register_scalable_target):
     policy_name = random_suffix_name("policy_name", 32)
     _ = sagemaker_endpoint_put_scaling_policy(resource_id, policy_name)
 
-    yield resource_id
+    yield resource_id, policy_name
     sagemaker_endpoint_delete_scaling_policy(resource_id, policy_name)
 
 
 @pytest.fixture(scope="module")
-def adopt_scalable_target(sagemaker_endpoint):
-    resource_id = sagemaker_endpoint
+def adopt_scalable_target(register_scalable_target):
+    resource_id = register_scalable_target
     target_resource_name = random_suffix_name("sagemaker-scalable-target", 32)
 
     replacements = REPLACEMENT_VALUES.copy()
@@ -117,13 +118,15 @@ def adopt_scalable_target(sagemaker_endpoint):
 
 
 @pytest.fixture(scope="module")
-def adopt_scaling_policy(adopt_scalable_target):
+def adopt_scaling_policy(adopt_scalable_target, put_scaling_policy):
     resource_id, adopted_target_reference = adopt_scalable_target
+    _, policy_name = put_scaling_policy
     policy_resource_name = random_suffix_name("sagemaker-scaling-policy", 32)
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements["ADOPTED_POLICY_NAME"] = policy_resource_name
     replacements["RESOURCE_ID"] = resource_id
+    replacements["POLICY_NAME"] = policy_name
 
     adopted_policy_reference, _, adopted_policy_resource = create_adopted_resource(
         resource_name=policy_resource_name,
@@ -146,7 +149,7 @@ class TestAdopted:
     def test_sagemaker_endpoint_autoscaling(
         self, put_scaling_policy, adopt_scaling_policy
     ):
-        sdk_resource_id = put_scaling_policy
+        sdk_resource_id, _ = put_scaling_policy
 
         (
             adopted_resource_id,
