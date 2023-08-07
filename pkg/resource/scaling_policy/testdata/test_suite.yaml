@@ -64,7 +64,7 @@ tests:
               message: "resource not found"
       invoke: ReadOne
       expect:
-        error: ": resource not found\n\tstatus code: 0, request id: "
+        error: "resource not found"
     - name: "ReadOne=NotFound"
       description: "Testing ReadOne when Describe fails to find the resource on SageMaker"
       given: 

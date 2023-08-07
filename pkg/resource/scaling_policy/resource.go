@@ -99,6 +99,10 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 		r.ko.Spec.ServiceNamespace = &f5
 	}
 
+	f6, f6ok := identifier.AdditionalKeys["policyName"]
+	if f6ok {
+		r.ko.Spec.PolicyName = &f6
+	}
 	return nil
 }
 
