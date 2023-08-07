@@ -172,7 +172,7 @@ def generate_sagemaker_policy_B(generate_sagemaker_target):
     ) = create_applicationautoscaling_resource(
         resource_plural=POLICY_RESOURCE_PLURAL,
         resource_name=policy_resource_name,
-        spec_file="sagemaker_endpoint_autoscaling_policy",
+        spec_file="sagemaker_endpoint_custom_autoscaling_policy",
         replacements=replacements,
     )
 
