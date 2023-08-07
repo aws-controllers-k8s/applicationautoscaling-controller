@@ -54,6 +54,8 @@ resources:
         code: rm.customSetLastModifiedTimeToCurrentTime(ko)
       sdk_read_many_post_build_request:
         code: rm.customSetDescribeScalingPoliciesInput(ctx, r, input)
+      post_set_resource_identifiers:
+        template_path: scaling_policy/post_set_resource_identifiers.go.tpl
     fields:
       ResourceID:
         is_primary_key: true
