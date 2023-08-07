@@ -338,7 +338,7 @@ class TestSageMakerEndpointAutoscaling:
             policy_reference_A,
         ) = generate_sagemaker_policy_A
 
-        (_, policy_resource_B, policy_spec_B, _) = generate_sagemaker_policy_B
+        (_, _, policy_spec_B, policy_reference_B) = generate_sagemaker_policy_B
 
         # Delete the Resource
 
