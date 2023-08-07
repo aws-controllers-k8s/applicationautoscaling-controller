@@ -121,7 +121,7 @@ def adopt_scalable_target(register_scalable_target):
 def adopt_scaling_policy(adopt_scalable_target, put_scaling_policy):
     resource_id, adopted_target_reference = adopt_scalable_target
     _, policy_name = put_scaling_policy
-    policy_resource_name = random_suffix_name("sagemaker-scaling-policy", 32)
+    policy_resource_name = random_suffix_name("adopted-scaling-policy", 32)
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements["ADOPTED_POLICY_NAME"] = policy_resource_name

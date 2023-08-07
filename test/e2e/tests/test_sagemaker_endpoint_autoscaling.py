@@ -113,7 +113,7 @@ def generate_sagemaker_policy_A(generate_sagemaker_target):
         target_spec,
         target_resource,
     ) = generate_sagemaker_target
-    policy_resource_name = random_suffix_name("sagemaker-scaling-policyA", 32)
+    policy_resource_name = random_suffix_name("sagemaker-scaling-policy-a", 32)
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements["SCALINGPOLICY_NAME"] = policy_resource_name
@@ -157,7 +157,7 @@ def generate_sagemaker_policy_B(generate_sagemaker_target):
         target_spec,
         target_resource,
     ) = generate_sagemaker_target
-    policy_resource_name = random_suffix_name("sagemaker-scaling-policyB", 32)
+    policy_resource_name = random_suffix_name("sagemaker-scaling-policy-b", 32)
 
     replacements = REPLACEMENT_VALUES.copy()
     replacements["SCALINGPOLICY_NAME"] = policy_resource_name
