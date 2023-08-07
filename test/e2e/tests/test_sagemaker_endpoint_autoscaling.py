@@ -359,9 +359,9 @@ class TestSageMakerEndpointAutoscaling:
         policy_description_A = self.get_sagemaker_scaling_policy_description(
             applicationautoscaling_client, resource_id, policy_spec_A["spec"]["policyName"]
         )
-        assert len(policy_description_A) = 0
+        assert len(policy_description_A) == 0
 
         policy_description_B = self.get_sagemaker_scaling_policy_description(
             applicationautoscaling_client, resource_id, policy_spec_B["spec"]["policyName"]
         )
-        assert len(policy_description_B) = 0
+        assert len(policy_description_B) == 0
