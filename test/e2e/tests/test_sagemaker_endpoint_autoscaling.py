@@ -41,7 +41,7 @@ POLICY_RESOURCE_PLURAL = "scalingpolicies"
 ENDPOINT_STATUS_INSERVICE = "InService"
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def name_suffix():
     return random_suffix_name("sagemaker-endpoint", 32)
 
@@ -51,7 +51,7 @@ def applicationautoscaling_client():
     return boto3.client("application-autoscaling")
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def sagemaker_endpoint(name_suffix):
     model_name = name_suffix + "-model"
     endpoint_config_name = name_suffix + "-config"
@@ -76,7 +76,7 @@ def sagemaker_endpoint(name_suffix):
     sagemaker_client().delete_model(ModelName=model_name)
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def generate_sagemaker_target(sagemaker_endpoint):
     resource_id, endpoint_name, variant_name = sagemaker_endpoint
     target_resource_name = random_suffix_name("sagemaker-scalable-target", 32)
@@ -112,7 +112,7 @@ def generate_sagemaker_target(sagemaker_endpoint):
         assert deleted
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def generate_sagemaker_policy_A(generate_sagemaker_target):
     (
         resource_id,
@@ -156,7 +156,7 @@ def generate_sagemaker_policy_A(generate_sagemaker_target):
         assert deleted
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def generate_sagemaker_policy_B(generate_sagemaker_target):
     (
         resource_id,
