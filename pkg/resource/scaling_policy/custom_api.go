@@ -59,4 +59,5 @@ func (rm *resourceManager) customCheckRequiredFieldsMissing(
 	if r.ko.Spec.ResourceID == nil || r.ko.Spec.ScalableDimension == nil || r.ko.Spec.ServiceNamespace == nil || r.ko.Spec.PolicyName == nil {
 		return true
 	}
+	return false
 }
