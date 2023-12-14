@@ -25,19 +25,24 @@ import (
 // Represents a scaling policy to use with Application Auto Scaling.
 //
 // For more information about configuring scaling policies for a specific service,
-// see Getting started with Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/getting-started.html)
+// see Amazon Web Services services that you can use with Application Auto Scaling
+// (https://docs.aws.amazon.com/autoscaling/application/userguide/integrated-services-list.html)
 // in the Application Auto Scaling User Guide.
 type ScalingPolicySpec struct {
 
 	// The name of the scaling policy.
+	//
+	// You cannot change the name of a scaling policy, but you can delete the original
+	// scaling policy and create a new scaling policy with the same settings and
+	// a different name.
 	// +kubebuilder:validation:Required
 	PolicyName *string `json:"policyName"`
-	// The policy type. This parameter is required if you are creating a scaling
-	// policy.
+	// The scaling policy type. This parameter is required if you are creating a
+	// scaling policy.
 	//
 	// The following policy types are supported:
 	//
-	// # TargetTrackingScaling—Not supported for Amazon EMR
+	// TargetTrackingScaling—Not supported for Amazon EMR.
 	//
 	// StepScaling—Not supported for DynamoDB, Amazon Comprehend, Lambda, Amazon
 	// Keyspaces, Amazon MSK, Amazon ElastiCache, or Neptune.
@@ -101,6 +106,12 @@ type ScalingPolicySpec struct {
 	//   - Neptune cluster - The resource type is cluster and the unique identifier
 	//     is the cluster name. Example: cluster:mycluster.
 	//
+	//   - SageMaker Serverless endpoint - The resource type is variant and the
+	//     unique identifier is the resource ID. Example: endpoint/my-end-point/variant/KMeansClustering.
+	//
+	//   - SageMaker inference component - The resource type is inference-component
+	//     and the unique identifier is the resource ID. Example: inference-component/my-inference-component.
+	//
 	// +kubebuilder:validation:Required
 	ResourceID *string `json:"resourceID"`
 	// The scalable dimension. This string consists of the service namespace, resource
@@ -134,7 +145,7 @@ type ScalingPolicySpec struct {
 	//     edition.
 	//
 	//   - sagemaker:variant:DesiredInstanceCount - The number of EC2 instances
-	//     for an SageMaker model endpoint variant.
+	//     for a SageMaker model endpoint variant.
 	//
 	//   - custom-resource:ResourceType:Property - The scalable dimension for a
 	//     custom resource provided by your own application or service.
@@ -166,6 +177,12 @@ type ScalingPolicySpec struct {
 	//
 	//   - neptune:cluster:ReadReplicaCount - The count of read replicas in an
 	//     Amazon Neptune DB cluster.
+	//
+	//   - sagemaker:variant:DesiredProvisionedConcurrency - The provisioned concurrency
+	//     for a SageMaker Serverless endpoint.
+	//
+	//   - sagemaker:inference-component:DesiredCopyCount - The number of copies
+	//     across an endpoint for a SageMaker inference component.
 	//
 	// +kubebuilder:validation:Required
 	ScalableDimension *string `json:"scalableDimension"`

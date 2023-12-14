@@ -109,8 +109,12 @@ func newResourceDelta(
 				delta.Add("Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude", a.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude, b.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
 			}
 		}
-		if !reflect.DeepEqual(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
+		if len(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) != len(b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
 			delta.Add("Spec.StepScalingPolicyConfiguration.StepAdjustments", a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments)
+		} else if len(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) > 0 {
+			if !reflect.DeepEqual(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
+				delta.Add("Spec.StepScalingPolicyConfiguration.StepAdjustments", a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments)
+			}
 		}
 	}
 	if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration, b.ko.Spec.TargetTrackingScalingPolicyConfiguration) {
@@ -119,14 +123,25 @@ func newResourceDelta(
 		if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification) {
 			delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification)
 		} else if a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil && b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
-			if !reflect.DeepEqual(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
+			if len(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) != len(b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
 				delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions)
+			} else if len(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) > 0 {
+				if !reflect.DeepEqual(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
+					delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions)
+				}
 			}
 			if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName) {
 				delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
 			} else if a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil && b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
 				if *a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != *b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName {
 					delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
+				}
+			}
+			if len(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics) != len(b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics) {
+				delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics)
+			} else if len(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics) > 0 {
+				if !reflect.DeepEqual(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics) {
+					delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics)
 				}
 			}
 			if ackcompare.HasNilDifference(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace) {

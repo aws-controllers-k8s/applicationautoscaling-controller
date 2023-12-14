@@ -38,7 +38,7 @@ type Alarm struct {
 // policy to use with Application Auto Scaling.
 //
 // For information about the available metrics for a service, see Amazon Web
-// Services Services That Publish CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+// Services services that publish CloudWatch metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
 // in the Amazon CloudWatch User Guide.
 //
 // To create your customized metric specification:
@@ -46,7 +46,7 @@ type Alarm struct {
 //   - Add values for each required parameter from CloudWatch. You can use
 //     an existing metric, or a new metric that you create. To use your own metric,
 //     you must first publish the metric to CloudWatch. For more information,
-//     see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+//     see Publish custom metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
 //     in the Amazon CloudWatch User Guide.
 //
 //   - Choose a metric that changes proportionally with capacity. The value
@@ -54,13 +54,16 @@ type Alarm struct {
 //     number of capacity units. That is, the value of the metric should decrease
 //     when capacity increases, and increase when capacity decreases.
 //
-// For more information about CloudWatch, see Amazon CloudWatch Concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html).
+// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+// in the Amazon CloudWatch User Guide.
 type CustomizedMetricSpecification struct {
-	Dimensions []*MetricDimension `json:"dimensions,omitempty"`
-	MetricName *string            `json:"metricName,omitempty"`
-	Namespace  *string            `json:"namespace,omitempty"`
-	Statistic  *string            `json:"statistic,omitempty"`
-	Unit       *string            `json:"unit,omitempty"`
+	Dimensions []*MetricDimension               `json:"dimensions,omitempty"`
+	MetricName *string                          `json:"metricName,omitempty"`
+	Metrics    []*TargetTrackingMetricDataQuery `json:"metrics,omitempty"`
+	Namespace  *string                          `json:"namespace,omitempty"`
+	Statistic  *string                          `json:"statistic,omitempty"`
+	Unit       *string                          `json:"unit,omitempty"`
 }
 
 // Describes the dimension names and values associated with a metric.
@@ -69,13 +72,23 @@ type MetricDimension struct {
 	Value *string `json:"value,omitempty"`
 }
 
+// Describes the reason for an activity that isn't scaled (not scaled activity),
+// in machine-readable format. For help interpreting the not scaled reason details,
+// see Scaling activities for Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-scaling-activities.html).
+type NotScaledReason struct {
+	Code            *string `json:"code,omitempty"`
+	CurrentCapacity *int64  `json:"currentCapacity,omitempty"`
+	MaxCapacity     *int64  `json:"maxCapacity,omitempty"`
+	MinCapacity     *int64  `json:"minCapacity,omitempty"`
+}
+
 // Represents a predefined metric for a target tracking scaling policy to use
 // with Application Auto Scaling.
 //
 // Only the Amazon Web Services that you're using send metrics to Amazon CloudWatch.
 // To determine whether a desired metric already exists by looking up its namespace
 // and dimension using the CloudWatch metrics dashboard in the console, follow
-// the procedure in Building dashboards with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
+// the procedure in Monitor your resources using CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
 // in the Application Auto Scaling User Guide.
 type PredefinedMetricSpecification struct {
 	PredefinedMetricType *string `json:"predefinedMetricType,omitempty"`
@@ -96,6 +109,7 @@ type ScalableTarget_SDK struct {
 	ResourceID        *string      `json:"resourceID,omitempty"`
 	RoleARN           *string      `json:"roleARN,omitempty"`
 	ScalableDimension *string      `json:"scalableDimension,omitempty"`
+	ScalableTargetARN *string      `json:"scalableTargetARN,omitempty"`
 	ServiceNamespace  *string      `json:"serviceNamespace,omitempty"`
 	// Specifies whether the scaling activities for a scalable target are in a suspended
 	// state.
@@ -119,7 +133,8 @@ type ScalingActivity struct {
 // Represents a scaling policy to use with Application Auto Scaling.
 //
 // For more information about configuring scaling policies for a specific service,
-// see Getting started with Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/getting-started.html)
+// see Amazon Web Services services that you can use with Application Auto Scaling
+// (https://docs.aws.amazon.com/autoscaling/application/userguide/integrated-services-list.html)
 // in the Application Auto Scaling User Guide.
 type ScalingPolicy_SDK struct {
 	Alarms            []*Alarm     `json:"alarms,omitempty"`
@@ -132,9 +147,15 @@ type ScalingPolicy_SDK struct {
 	ServiceNamespace  *string      `json:"serviceNamespace,omitempty"`
 	// Represents a step scaling policy configuration to use with Application Auto
 	// Scaling.
+	//
+	// For more information, see Step scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html)
+	// in the Application Auto Scaling User Guide.
 	StepScalingPolicyConfiguration *StepScalingPolicyConfiguration `json:"stepScalingPolicyConfiguration,omitempty"`
 	// Represents a target tracking scaling policy configuration to use with Application
 	// Auto Scaling.
+	//
+	// For more information, see Target tracking scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html)
+	// in the Application Auto Scaling User Guide.
 	TargetTrackingScalingPolicyConfiguration *TargetTrackingScalingPolicyConfiguration `json:"targetTrackingScalingPolicyConfiguration,omitempty"`
 }
 
@@ -159,11 +180,11 @@ type ScheduledAction struct {
 // For the following examples, suppose that you have an alarm with a breach
 // threshold of 50:
 //
-//   - To trigger the adjustment when the metric is greater than or equal to
-//     50 and less than 60, specify a lower bound of 0 and an upper bound of
-//     10.
+//   - To initiate the adjustment when the metric is greater than or equal
+//     to 50 and less than 60, specify a lower bound of 0 and an upper bound
+//     of 10.
 //
-//   - To trigger the adjustment when the metric is greater than 40 and less
+//   - To initiate the adjustment when the metric is greater than 40 and less
 //     than or equal to 50, specify a lower bound of -10 and an upper bound of
 //     0.
 //
@@ -188,6 +209,9 @@ type StepAdjustment struct {
 
 // Represents a step scaling policy configuration to use with Application Auto
 // Scaling.
+//
+// For more information, see Step scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html)
+// in the Application Auto Scaling User Guide.
 type StepScalingPolicyConfiguration struct {
 	AdjustmentType         *string           `json:"adjustmentType,omitempty"`
 	Cooldown               *int64            `json:"cooldown,omitempty"`
@@ -204,14 +228,69 @@ type SuspendedState struct {
 	ScheduledScalingSuspended  *bool `json:"scheduledScalingSuspended,omitempty"`
 }
 
+// Represents a specific metric.
+//
+// Metric is a property of the TargetTrackingMetricStat object.
+type TargetTrackingMetric struct {
+	Dimensions []*TargetTrackingMetricDimension `json:"dimensions,omitempty"`
+	MetricName *string                          `json:"metricName,omitempty"`
+	Namespace  *string                          `json:"namespace,omitempty"`
+}
+
+// The metric data to return. Also defines whether this call is returning data
+// for one metric only, or whether it is performing a math expression on the
+// values of returned metric statistics to create a new time series. A time
+// series is a series of data points, each of which is associated with a timestamp.
+//
+// For more information and examples, see Create a target tracking scaling policy
+// for Application Auto Scaling using metric math (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking-metric-math.html)
+// in the Application Auto Scaling User Guide.
+type TargetTrackingMetricDataQuery struct {
+	Expression *string `json:"expression,omitempty"`
+	ID         *string `json:"id,omitempty"`
+	Label      *string `json:"label,omitempty"`
+	// This structure defines the CloudWatch metric to return, along with the statistic,
+	// period, and unit.
+	//
+	// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+	// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+	// in the Amazon CloudWatch User Guide.
+	MetricStat *TargetTrackingMetricStat `json:"metricStat,omitempty"`
+	ReturnData *bool                     `json:"returnData,omitempty"`
+}
+
+// Describes the dimension of a metric.
+type TargetTrackingMetricDimension struct {
+	Name  *string `json:"name,omitempty"`
+	Value *string `json:"value,omitempty"`
+}
+
+// This structure defines the CloudWatch metric to return, along with the statistic,
+// period, and unit.
+//
+// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+// in the Amazon CloudWatch User Guide.
+type TargetTrackingMetricStat struct {
+	// Represents a specific metric.
+	//
+	// Metric is a property of the TargetTrackingMetricStat object.
+	Metric *TargetTrackingMetric `json:"metric,omitempty"`
+	Stat   *string               `json:"stat,omitempty"`
+	Unit   *string               `json:"unit,omitempty"`
+}
+
 // Represents a target tracking scaling policy configuration to use with Application
 // Auto Scaling.
+//
+// For more information, see Target tracking scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html)
+// in the Application Auto Scaling User Guide.
 type TargetTrackingScalingPolicyConfiguration struct {
 	// Represents a CloudWatch metric of your choosing for a target tracking scaling
 	// policy to use with Application Auto Scaling.
 	//
 	// For information about the available metrics for a service, see Amazon Web
-	// Services Services That Publish CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+	// Services services that publish CloudWatch metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
 	// in the Amazon CloudWatch User Guide.
 	//
 	// To create your customized metric specification:
@@ -219,7 +298,7 @@ type TargetTrackingScalingPolicyConfiguration struct {
 	//    * Add values for each required parameter from CloudWatch. You can use
 	//    an existing metric, or a new metric that you create. To use your own metric,
 	//    you must first publish the metric to CloudWatch. For more information,
-	//    see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+	//    see Publish custom metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
 	//    in the Amazon CloudWatch User Guide.
 	//
 	//    * Choose a metric that changes proportionally with capacity. The value
@@ -227,7 +306,9 @@ type TargetTrackingScalingPolicyConfiguration struct {
 	//    number of capacity units. That is, the value of the metric should decrease
 	//    when capacity increases, and increase when capacity decreases.
 	//
-	// For more information about CloudWatch, see Amazon CloudWatch Concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html).
+	// For more information about the CloudWatch terminology below, see Amazon CloudWatch
+	// concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+	// in the Amazon CloudWatch User Guide.
 	CustomizedMetricSpecification *CustomizedMetricSpecification `json:"customizedMetricSpecification,omitempty"`
 	DisableScaleIn                *bool                          `json:"disableScaleIn,omitempty"`
 	// Represents a predefined metric for a target tracking scaling policy to use
@@ -236,7 +317,7 @@ type TargetTrackingScalingPolicyConfiguration struct {
 	// Only the Amazon Web Services that you're using send metrics to Amazon CloudWatch.
 	// To determine whether a desired metric already exists by looking up its namespace
 	// and dimension using the CloudWatch metrics dashboard in the console, follow
-	// the procedure in Building dashboards with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
+	// the procedure in Monitor your resources using CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
 	// in the Application Auto Scaling User Guide.
 	PredefinedMetricSpecification *PredefinedMetricSpecification `json:"predefinedMetricSpecification,omitempty"`
 	ScaleInCooldown               *int64                         `json:"scaleInCooldown,omitempty"`

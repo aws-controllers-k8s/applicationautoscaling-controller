@@ -36,19 +36,23 @@ spec:
             description: "ScalingPolicySpec defines the desired state of ScalingPolicy.
               \n Represents a scaling policy to use with Application Auto Scaling.
               \n For more information about configuring scaling policies for a specific
-              service, see Getting started with Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/getting-started.html)
+              service, see Amazon Web Services services that you can use with Application
+              Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/integrated-services-list.html)
               in the Application Auto Scaling User Guide."
             properties:
               policyName:
-                description: The name of the scaling policy.
+                description: "The name of the scaling policy. \n You cannot change
+                  the name of a scaling policy, but you can delete the original scaling
+                  policy and create a new scaling policy with the same settings and
+                  a different name."
                 type: string
               policyType:
-                description: "The policy type. This parameter is required if you are
-                  creating a scaling policy. \n The following policy types are supported:
-                  \n TargetTrackingScaling—Not supported for Amazon EMR \n StepScaling—Not
-                  supported for DynamoDB, Amazon Comprehend, Lambda, Amazon Keyspaces,
-                  Amazon MSK, Amazon ElastiCache, or Neptune. \n For more information,
-                  see Target tracking scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html)
+                description: "The scaling policy type. This parameter is required
+                  if you are creating a scaling policy. \n The following policy types
+                  are supported: \n TargetTrackingScaling—Not supported for Amazon
+                  EMR. \n StepScaling—Not supported for DynamoDB, Amazon Comprehend,
+                  Lambda, Amazon Keyspaces, Amazon MSK, Amazon ElastiCache, or Neptune.
+                  \n For more information, see Target tracking scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking.html)
                   and Step scaling policies (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-step-scaling-policies.html)
                   in the Application Auto Scaling User Guide."
                 type: string
@@ -94,7 +98,11 @@ spec:
                   replication-group and the unique identifier is the replication group
                   name. Example: replication-group/mycluster. \n * Neptune cluster
                   - The resource type is cluster and the unique identifier is the
-                  cluster name. Example: cluster:mycluster."
+                  cluster name. Example: cluster:mycluster. \n * SageMaker Serverless
+                  endpoint - The resource type is variant and the unique identifier
+                  is the resource ID. Example: endpoint/my-end-point/variant/KMeansClustering.
+                  \n * SageMaker inference component - The resource type is inference-component
+                  and the unique identifier is the resource ID. Example: inference-component/my-inference-component."
                 type: string
               scalableDimension:
                 description: "The scalable dimension. This string consists of the
@@ -111,7 +119,7 @@ spec:
                   - The count of Aurora Replicas in an Aurora DB cluster. Available
                   for Aurora MySQL-compatible edition and Aurora PostgreSQL-compatible
                   edition. \n * sagemaker:variant:DesiredInstanceCount - The number
-                  of EC2 instances for an SageMaker model endpoint variant. \n * custom-resource:ResourceType:Property
+                  of EC2 instances for a SageMaker model endpoint variant. \n * custom-resource:ResourceType:Property
                   - The scalable dimension for a custom resource provided by your
                   own application or service. \n * comprehend:document-classifier-endpoint:DesiredInferenceUnits
                   - The number of inference units for an Amazon Comprehend document
@@ -128,7 +136,10 @@ spec:
                   \n * elasticache:replication-group:Replicas - The number of replicas
                   per node group for an Amazon ElastiCache replication group. \n *
                   neptune:cluster:ReadReplicaCount - The count of read replicas in
-                  an Amazon Neptune DB cluster."
+                  an Amazon Neptune DB cluster. \n * sagemaker:variant:DesiredProvisionedConcurrency
+                  - The provisioned concurrency for a SageMaker Serverless endpoint.
+                  \n * sagemaker:inference-component:DesiredCopyCount - The number
+                  of copies across an endpoint for a SageMaker inference component."
                 type: string
               serviceNamespace:
                 description: The namespace of the Amazon Web Services service that
@@ -157,9 +168,9 @@ spec:
                         value of the aggregated CloudWatch metric and the breach threshold
                         that you've defined for the alarm. \n For the following examples,
                         suppose that you have an alarm with a breach threshold of
-                        50: \n * To trigger the adjustment when the metric is greater
+                        50: \n * To initiate the adjustment when the metric is greater
                         than or equal to 50 and less than 60, specify a lower bound
-                        of 0 and an upper bound of 10. \n * To trigger the adjustment
+                        of 0 and an upper bound of 10. \n * To initiate the adjustment
                         when the metric is greater than 40 and less than or equal
                         to 50, specify a lower bound of -10 and an upper bound of
                         0. \n There are a few rules for the step adjustments for your
@@ -192,21 +203,22 @@ spec:
                     description: "Represents a CloudWatch metric of your choosing
                       for a target tracking scaling policy to use with Application
                       Auto Scaling. \n For information about the available metrics
-                      for a service, see Amazon Web Services Services That Publish
-                      CloudWatch Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
+                      for a service, see Amazon Web Services services that publish
+                      CloudWatch metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/aws-services-cloudwatch-metrics.html)
                       in the Amazon CloudWatch User Guide. \n To create your customized
                       metric specification: \n * Add values for each required parameter
                       from CloudWatch. You can use an existing metric, or a new metric
                       that you create. To use your own metric, you must first publish
                       the metric to CloudWatch. For more information, see Publish
-                      Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+                      custom metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
                       in the Amazon CloudWatch User Guide. \n * Choose a metric that
                       changes proportionally with capacity. The value of the metric
                       should increase or decrease in inverse proportion to the number
                       of capacity units. That is, the value of the metric should decrease
                       when capacity increases, and increase when capacity decreases.
-                      \n For more information about CloudWatch, see Amazon CloudWatch
-                      Concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)."
+                      \n For more information about the CloudWatch terminology below,
+                      see Amazon CloudWatch concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+                      in the Amazon CloudWatch User Guide."
                     properties:
                       dimensions:
                         items:
@@ -221,6 +233,62 @@ spec:
                         type: array
                       metricName:
                         type: string
+                      metrics:
+                        items:
+                          description: "The metric data to return. Also defines whether
+                            this call is returning data for one metric only, or whether
+                            it is performing a math expression on the values of returned
+                            metric statistics to create a new time series. A time
+                            series is a series of data points, each of which is associated
+                            with a timestamp. \n For more information and examples,
+                            see Create a target tracking scaling policy for Application
+                            Auto Scaling using metric math (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-target-tracking-metric-math.html)
+                            in the Application Auto Scaling User Guide."
+                          properties:
+                            expression:
+                              type: string
+                            id:
+                              type: string
+                            label:
+                              type: string
+                            metricStat:
+                              description: "This structure defines the CloudWatch
+                                metric to return, along with the statistic, period,
+                                and unit. \n For more information about the CloudWatch
+                                terminology below, see Amazon CloudWatch concepts
+                                (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)
+                                in the Amazon CloudWatch User Guide."
+                              properties:
+                                metric:
+                                  description: "Represents a specific metric. \n Metric
+                                    is a property of the TargetTrackingMetricStat
+                                    object."
+                                  properties:
+                                    dimensions:
+                                      items:
+                                        description: Describes the dimension of a
+                                          metric.
+                                        properties:
+                                          name:
+                                            type: string
+                                          value:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    metricName:
+                                      type: string
+                                    namespace:
+                                      type: string
+                                  type: object
+                                stat:
+                                  type: string
+                                unit:
+                                  type: string
+                              type: object
+                            returnData:
+                              type: boolean
+                          type: object
+                        type: array
                       namespace:
                         type: string
                       statistic:
@@ -236,8 +304,8 @@ spec:
                       the Amazon Web Services that you're using send metrics to Amazon
                       CloudWatch. To determine whether a desired metric already exists
                       by looking up its namespace and dimension using the CloudWatch
-                      metrics dashboard in the console, follow the procedure in Building
-                      dashboards with CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
+                      metrics dashboard in the console, follow the procedure in Monitor
+                      your resources using CloudWatch (https://docs.aws.amazon.com/autoscaling/application/userguide/monitoring-cloudwatch.html)
                       in the Application Auto Scaling User Guide."
                     properties:
                       predefinedMetricType:

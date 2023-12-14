@@ -198,6 +198,60 @@ func (rm *resourceManager) sdkFind(
 				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
 					f9f0.MetricName = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName
 				}
+				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics != nil {
+					f9f0f2 := []*svcapitypes.TargetTrackingMetricDataQuery{}
+					for _, f9f0f2iter := range elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics {
+						f9f0f2elem := &svcapitypes.TargetTrackingMetricDataQuery{}
+						if f9f0f2iter.Expression != nil {
+							f9f0f2elem.Expression = f9f0f2iter.Expression
+						}
+						if f9f0f2iter.Id != nil {
+							f9f0f2elem.ID = f9f0f2iter.Id
+						}
+						if f9f0f2iter.Label != nil {
+							f9f0f2elem.Label = f9f0f2iter.Label
+						}
+						if f9f0f2iter.MetricStat != nil {
+							f9f0f2elemf3 := &svcapitypes.TargetTrackingMetricStat{}
+							if f9f0f2iter.MetricStat.Metric != nil {
+								f9f0f2elemf3f0 := &svcapitypes.TargetTrackingMetric{}
+								if f9f0f2iter.MetricStat.Metric.Dimensions != nil {
+									f9f0f2elemf3f0f0 := []*svcapitypes.TargetTrackingMetricDimension{}
+									for _, f9f0f2elemf3f0f0iter := range f9f0f2iter.MetricStat.Metric.Dimensions {
+										f9f0f2elemf3f0f0elem := &svcapitypes.TargetTrackingMetricDimension{}
+										if f9f0f2elemf3f0f0iter.Name != nil {
+											f9f0f2elemf3f0f0elem.Name = f9f0f2elemf3f0f0iter.Name
+										}
+										if f9f0f2elemf3f0f0iter.Value != nil {
+											f9f0f2elemf3f0f0elem.Value = f9f0f2elemf3f0f0iter.Value
+										}
+										f9f0f2elemf3f0f0 = append(f9f0f2elemf3f0f0, f9f0f2elemf3f0f0elem)
+									}
+									f9f0f2elemf3f0.Dimensions = f9f0f2elemf3f0f0
+								}
+								if f9f0f2iter.MetricStat.Metric.MetricName != nil {
+									f9f0f2elemf3f0.MetricName = f9f0f2iter.MetricStat.Metric.MetricName
+								}
+								if f9f0f2iter.MetricStat.Metric.Namespace != nil {
+									f9f0f2elemf3f0.Namespace = f9f0f2iter.MetricStat.Metric.Namespace
+								}
+								f9f0f2elemf3.Metric = f9f0f2elemf3f0
+							}
+							if f9f0f2iter.MetricStat.Stat != nil {
+								f9f0f2elemf3.Stat = f9f0f2iter.MetricStat.Stat
+							}
+							if f9f0f2iter.MetricStat.Unit != nil {
+								f9f0f2elemf3.Unit = f9f0f2iter.MetricStat.Unit
+							}
+							f9f0f2elem.MetricStat = f9f0f2elemf3
+						}
+						if f9f0f2iter.ReturnData != nil {
+							f9f0f2elem.ReturnData = f9f0f2iter.ReturnData
+						}
+						f9f0f2 = append(f9f0f2, f9f0f2elem)
+					}
+					f9f0.Metrics = f9f0f2
+				}
 				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
 					f9f0.Namespace = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace
 				}
@@ -409,6 +463,60 @@ func (rm *resourceManager) newCreateRequestPayload(
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
 				f6f0.SetMetricName(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
 			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics != nil {
+				f6f0f2 := []*svcsdk.TargetTrackingMetricDataQuery{}
+				for _, f6f0f2iter := range r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics {
+					f6f0f2elem := &svcsdk.TargetTrackingMetricDataQuery{}
+					if f6f0f2iter.Expression != nil {
+						f6f0f2elem.SetExpression(*f6f0f2iter.Expression)
+					}
+					if f6f0f2iter.ID != nil {
+						f6f0f2elem.SetId(*f6f0f2iter.ID)
+					}
+					if f6f0f2iter.Label != nil {
+						f6f0f2elem.SetLabel(*f6f0f2iter.Label)
+					}
+					if f6f0f2iter.MetricStat != nil {
+						f6f0f2elemf3 := &svcsdk.TargetTrackingMetricStat{}
+						if f6f0f2iter.MetricStat.Metric != nil {
+							f6f0f2elemf3f0 := &svcsdk.TargetTrackingMetric{}
+							if f6f0f2iter.MetricStat.Metric.Dimensions != nil {
+								f6f0f2elemf3f0f0 := []*svcsdk.TargetTrackingMetricDimension{}
+								for _, f6f0f2elemf3f0f0iter := range f6f0f2iter.MetricStat.Metric.Dimensions {
+									f6f0f2elemf3f0f0elem := &svcsdk.TargetTrackingMetricDimension{}
+									if f6f0f2elemf3f0f0iter.Name != nil {
+										f6f0f2elemf3f0f0elem.SetName(*f6f0f2elemf3f0f0iter.Name)
+									}
+									if f6f0f2elemf3f0f0iter.Value != nil {
+										f6f0f2elemf3f0f0elem.SetValue(*f6f0f2elemf3f0f0iter.Value)
+									}
+									f6f0f2elemf3f0f0 = append(f6f0f2elemf3f0f0, f6f0f2elemf3f0f0elem)
+								}
+								f6f0f2elemf3f0.SetDimensions(f6f0f2elemf3f0f0)
+							}
+							if f6f0f2iter.MetricStat.Metric.MetricName != nil {
+								f6f0f2elemf3f0.SetMetricName(*f6f0f2iter.MetricStat.Metric.MetricName)
+							}
+							if f6f0f2iter.MetricStat.Metric.Namespace != nil {
+								f6f0f2elemf3f0.SetNamespace(*f6f0f2iter.MetricStat.Metric.Namespace)
+							}
+							f6f0f2elemf3.SetMetric(f6f0f2elemf3f0)
+						}
+						if f6f0f2iter.MetricStat.Stat != nil {
+							f6f0f2elemf3.SetStat(*f6f0f2iter.MetricStat.Stat)
+						}
+						if f6f0f2iter.MetricStat.Unit != nil {
+							f6f0f2elemf3.SetUnit(*f6f0f2iter.MetricStat.Unit)
+						}
+						f6f0f2elem.SetMetricStat(f6f0f2elemf3)
+					}
+					if f6f0f2iter.ReturnData != nil {
+						f6f0f2elem.SetReturnData(*f6f0f2iter.ReturnData)
+					}
+					f6f0f2 = append(f6f0f2, f6f0f2elem)
+				}
+				f6f0.SetMetrics(f6f0f2)
+			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
 				f6f0.SetNamespace(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace)
 			}
@@ -583,6 +691,60 @@ func (rm *resourceManager) newUpdateRequestPayload(
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
 				f6f0.SetMetricName(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
+			}
+			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics != nil {
+				f6f0f2 := []*svcsdk.TargetTrackingMetricDataQuery{}
+				for _, f6f0f2iter := range r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Metrics {
+					f6f0f2elem := &svcsdk.TargetTrackingMetricDataQuery{}
+					if f6f0f2iter.Expression != nil {
+						f6f0f2elem.SetExpression(*f6f0f2iter.Expression)
+					}
+					if f6f0f2iter.ID != nil {
+						f6f0f2elem.SetId(*f6f0f2iter.ID)
+					}
+					if f6f0f2iter.Label != nil {
+						f6f0f2elem.SetLabel(*f6f0f2iter.Label)
+					}
+					if f6f0f2iter.MetricStat != nil {
+						f6f0f2elemf3 := &svcsdk.TargetTrackingMetricStat{}
+						if f6f0f2iter.MetricStat.Metric != nil {
+							f6f0f2elemf3f0 := &svcsdk.TargetTrackingMetric{}
+							if f6f0f2iter.MetricStat.Metric.Dimensions != nil {
+								f6f0f2elemf3f0f0 := []*svcsdk.TargetTrackingMetricDimension{}
+								for _, f6f0f2elemf3f0f0iter := range f6f0f2iter.MetricStat.Metric.Dimensions {
+									f6f0f2elemf3f0f0elem := &svcsdk.TargetTrackingMetricDimension{}
+									if f6f0f2elemf3f0f0iter.Name != nil {
+										f6f0f2elemf3f0f0elem.SetName(*f6f0f2elemf3f0f0iter.Name)
+									}
+									if f6f0f2elemf3f0f0iter.Value != nil {
+										f6f0f2elemf3f0f0elem.SetValue(*f6f0f2elemf3f0f0iter.Value)
+									}
+									f6f0f2elemf3f0f0 = append(f6f0f2elemf3f0f0, f6f0f2elemf3f0f0elem)
+								}
+								f6f0f2elemf3f0.SetDimensions(f6f0f2elemf3f0f0)
+							}
+							if f6f0f2iter.MetricStat.Metric.MetricName != nil {
+								f6f0f2elemf3f0.SetMetricName(*f6f0f2iter.MetricStat.Metric.MetricName)
+							}
+							if f6f0f2iter.MetricStat.Metric.Namespace != nil {
+								f6f0f2elemf3f0.SetNamespace(*f6f0f2iter.MetricStat.Metric.Namespace)
+							}
+							f6f0f2elemf3.SetMetric(f6f0f2elemf3f0)
+						}
+						if f6f0f2iter.MetricStat.Stat != nil {
+							f6f0f2elemf3.SetStat(*f6f0f2iter.MetricStat.Stat)
+						}
+						if f6f0f2iter.MetricStat.Unit != nil {
+							f6f0f2elemf3.SetUnit(*f6f0f2iter.MetricStat.Unit)
+						}
+						f6f0f2elem.SetMetricStat(f6f0f2elemf3)
+					}
+					if f6f0f2iter.ReturnData != nil {
+						f6f0f2elem.SetReturnData(*f6f0f2iter.ReturnData)
+					}
+					f6f0f2 = append(f6f0f2, f6f0f2elem)
+				}
+				f6f0.SetMetrics(f6f0f2)
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
 				f6f0.SetNamespace(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace)

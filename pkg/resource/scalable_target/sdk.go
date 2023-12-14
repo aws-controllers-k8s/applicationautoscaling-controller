@@ -119,23 +119,30 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.ScalableDimension = nil
 		}
+		if elem.ScalableTargetARN != nil {
+			if ko.Status.ACKResourceMetadata == nil {
+				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+			}
+			tmpARN := ackv1alpha1.AWSResourceName(*elem.ScalableTargetARN)
+			ko.Status.ACKResourceMetadata.ARN = &tmpARN
+		}
 		if elem.ServiceNamespace != nil {
 			ko.Spec.ServiceNamespace = elem.ServiceNamespace
 		} else {
 			ko.Spec.ServiceNamespace = nil
 		}
 		if elem.SuspendedState != nil {
-			f7 := &svcapitypes.SuspendedState{}
+			f8 := &svcapitypes.SuspendedState{}
 			if elem.SuspendedState.DynamicScalingInSuspended != nil {
-				f7.DynamicScalingInSuspended = elem.SuspendedState.DynamicScalingInSuspended
+				f8.DynamicScalingInSuspended = elem.SuspendedState.DynamicScalingInSuspended
 			}
 			if elem.SuspendedState.DynamicScalingOutSuspended != nil {
-				f7.DynamicScalingOutSuspended = elem.SuspendedState.DynamicScalingOutSuspended
+				f8.DynamicScalingOutSuspended = elem.SuspendedState.DynamicScalingOutSuspended
 			}
 			if elem.SuspendedState.ScheduledScalingSuspended != nil {
-				f7.ScheduledScalingSuspended = elem.SuspendedState.ScheduledScalingSuspended
+				f8.ScheduledScalingSuspended = elem.SuspendedState.ScheduledScalingSuspended
 			}
-			ko.Spec.SuspendedState = f7
+			ko.Spec.SuspendedState = f8
 		} else {
 			ko.Spec.SuspendedState = nil
 		}
@@ -205,6 +212,14 @@ func (rm *resourceManager) sdkCreate(
 	// the original Kubernetes object we passed to the function
 	ko := desired.ko.DeepCopy()
 
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.ScalableTargetARN != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.ScalableTargetARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
+	}
+
 	rm.setStatusDefaults(ko)
 	return &resource{ko}, nil
 }
@@ -248,6 +263,15 @@ func (rm *resourceManager) newCreateRequestPayload(
 		}
 		res.SetSuspendedState(f6)
 	}
+	if r.ko.Spec.Tags != nil {
+		f7 := map[string]*string{}
+		for f7key, f7valiter := range r.ko.Spec.Tags {
+			var f7val string
+			f7val = *f7valiter
+			f7[f7key] = &f7val
+		}
+		res.SetTags(f7)
+	}
 
 	return res, nil
 }
@@ -280,6 +304,14 @@ func (rm *resourceManager) sdkUpdate(
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
 	ko := desired.ko.DeepCopy()
+
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.ScalableTargetARN != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.ScalableTargetARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
+	}
 
 	rm.setStatusDefaults(ko)
 	rm.customSetLastModifiedTimeToCurrentTime(ko)
@@ -325,6 +357,15 @@ func (rm *resourceManager) newUpdateRequestPayload(
 			f6.SetScheduledScalingSuspended(*r.ko.Spec.SuspendedState.ScheduledScalingSuspended)
 		}
 		res.SetSuspendedState(f6)
+	}
+	if r.ko.Spec.Tags != nil {
+		f7 := map[string]*string{}
+		for f7key, f7valiter := range r.ko.Spec.Tags {
+			var f7val string
+			f7val = *f7valiter
+			f7[f7key] = &f7val
+		}
+		res.SetTags(f7)
 	}
 
 	return res, nil

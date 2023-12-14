@@ -31,11 +31,11 @@ type ScalableTargetSpec struct {
 	// when registering a new scalable target.
 	//
 	// Although you can specify a large maximum capacity, note that service quotas
-	// may impose lower limits. Each service has its own default quotas for the
+	// might impose lower limits. Each service has its own default quotas for the
 	// maximum capacity of the resource. If you want to specify a higher limit,
 	// you can request an increase. For more information, consult the documentation
 	// for that service. For information about the default quotas for each service,
-	// see Service Endpoints and Quotas (https://docs.aws.amazon.com/general/latest/gr/aws-service-information.html)
+	// see Service endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/aws-service-information.html)
 	// in the Amazon Web Services General Reference.
 	MaxCapacity *int64 `json:"maxCapacity,omitempty"`
 	// The minimum value that you plan to scale in to. When a scaling policy is
@@ -43,10 +43,34 @@ type ScalableTargetSpec struct {
 	// the minimum capacity limit in response to changing demand. This property
 	// is required when registering a new scalable target.
 	//
-	// For certain resources, the minimum value allowed is 0. This includes Lambda
-	// provisioned concurrency, Spot Fleet, ECS services, Aurora DB clusters, EMR
-	// clusters, and custom resources. For all other resources, the minimum value
-	// allowed is 1.
+	// For the following resources, the minimum value allowed is 0.
+	//
+	//   - AppStream 2.0 fleets
+	//
+	//   - Aurora DB clusters
+	//
+	//   - ECS services
+	//
+	//   - EMR clusters
+	//
+	//   - Lambda provisioned concurrency
+	//
+	//   - SageMaker endpoint variants
+	//
+	//   - SageMaker Serverless endpoint provisioned concurrency
+	//
+	//   - Spot Fleets
+	//
+	//   - custom resources
+	//
+	// It's strongly recommended that you specify a value greater than 0. A value
+	// greater than 0 means that data points are continuously reported to CloudWatch
+	// that scaling policies can use to scale on a metric like average CPU utilization.
+	//
+	// For all other resources, the minimum allowed value depends on the type of
+	// resource that you are using. If you provide a value that is lower than what
+	// a resource can accept, an error occurs. In which case, the error message
+	// will provide the minimum value that the resource can accept.
 	MinCapacity *int64 `json:"minCapacity,omitempty"`
 	// The identifier of the resource that is associated with the scalable target.
 	// This string consists of the resource type and unique identifier.
@@ -103,6 +127,12 @@ type ScalableTargetSpec struct {
 	//   - Neptune cluster - The resource type is cluster and the unique identifier
 	//     is the cluster name. Example: cluster:mycluster.
 	//
+	//   - SageMaker Serverless endpoint - The resource type is variant and the
+	//     unique identifier is the resource ID. Example: endpoint/my-end-point/variant/KMeansClustering.
+	//
+	//   - SageMaker inference component - The resource type is inference-component
+	//     and the unique identifier is the resource ID. Example: inference-component/my-inference-component.
+	//
 	// +kubebuilder:validation:Required
 	ResourceID *string `json:"resourceID"`
 	// This parameter is required for services that do not support service-linked
@@ -144,7 +174,7 @@ type ScalableTargetSpec struct {
 	//     edition.
 	//
 	//   - sagemaker:variant:DesiredInstanceCount - The number of EC2 instances
-	//     for an SageMaker model endpoint variant.
+	//     for a SageMaker model endpoint variant.
 	//
 	//   - custom-resource:ResourceType:Property - The scalable dimension for a
 	//     custom resource provided by your own application or service.
@@ -177,6 +207,12 @@ type ScalableTargetSpec struct {
 	//   - neptune:cluster:ReadReplicaCount - The count of read replicas in an
 	//     Amazon Neptune DB cluster.
 	//
+	//   - sagemaker:variant:DesiredProvisionedConcurrency - The provisioned concurrency
+	//     for a SageMaker Serverless endpoint.
+	//
+	//   - sagemaker:inference-component:DesiredCopyCount - The number of copies
+	//     across an endpoint for a SageMaker inference component.
+	//
 	// +kubebuilder:validation:Required
 	ScalableDimension *string `json:"scalableDimension"`
 	// The namespace of the Amazon Web Services service that provides the resource.
@@ -203,6 +239,18 @@ type ScalableTargetSpec struct {
 	// For more information, see Suspending and resuming scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-suspend-resume-scaling.html)
 	// in the Application Auto Scaling User Guide.
 	SuspendedState *SuspendedState `json:"suspendedState,omitempty"`
+	// Assigns one or more tags to the scalable target. Use this parameter to tag
+	// the scalable target when it is created. To tag an existing scalable target,
+	// use the TagResource operation.
+	//
+	// Each tag consists of a tag key and a tag value. Both the tag key and the
+	// tag value are required. You cannot have more than one tag on a scalable target
+	// with the same tag key.
+	//
+	// Use tags to control access to a scalable target. For more information, see
+	// Tagging support for Application Auto Scaling (https://docs.aws.amazon.com/autoscaling/application/userguide/resource-tagging-support.html)
+	// in the Application Auto Scaling User Guide.
+	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 // ScalableTargetStatus defines the observed state of ScalableTarget
