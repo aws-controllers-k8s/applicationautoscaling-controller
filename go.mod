@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.5
 
 require (
-	github.com/aws-controllers-k8s/runtime v0.31.0
+	github.com/aws-controllers-k8s/runtime v0.32.0
 	github.com/aws/aws-sdk-go v1.49.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.4.1
