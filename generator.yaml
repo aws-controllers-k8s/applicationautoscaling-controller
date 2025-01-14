@@ -56,6 +56,8 @@ resources:
         code: rm.customSetDescribeScalingPoliciesInput(ctx, r, input)
       post_set_resource_identifiers:
         template_path: scaling_policy/post_set_resource_identifiers.go.tpl
+      post_populate_resource_from_annotation:
+        template_path: scaling_policy/post_populate_resource_from_annotation.go.tpl
     fields:
       ResourceID:
         is_primary_key: true
