@@ -18,7 +18,7 @@ import (
 	"time"
 
 	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
-	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/applicationautoscaling"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,7 +46,9 @@ func (rm *resourceManager) customSetDescribeScalingPoliciesInput(
 	var policyNames []*string
 	if spec.PolicyName != nil {
 		policyNames = append(policyNames, spec.PolicyName)
-		input.SetPolicyNames(policyNames)
+		for _, policyName := range policyNames {
+			input.PolicyNames = append(input.PolicyNames, *policyName)
+		}
 	}
 }
 

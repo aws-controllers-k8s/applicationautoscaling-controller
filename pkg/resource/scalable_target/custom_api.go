@@ -15,10 +15,11 @@ package scalable_target
 
 import (
 	"context"
-	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
-	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
+
+	svcapitypes "github.com/aws-controllers-k8s/applicationautoscaling-controller/apis/v1alpha1"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/applicationautoscaling"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (rm *resourceManager) customDescribeScalableTarget(
@@ -31,7 +32,9 @@ func (rm *resourceManager) customDescribeScalableTarget(
 	var resourceIDList []*string
 	if latestSpec.ResourceID != nil {
 		resourceIDList = append(resourceIDList, latestSpec.ResourceID)
-		input.SetResourceIds(resourceIDList)
+		for _, resourceID := range resourceIDList {
+			input.ResourceIds = append(input.ResourceIds, *resourceID)
+		}
 	}
 }
 

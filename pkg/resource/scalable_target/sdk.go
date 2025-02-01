@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 
@@ -28,8 +29,10 @@ import (
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/applicationautoscaling"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/applicationautoscaling/types"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -40,8 +43,7 @@ import (
 var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
-	_ = &aws.JSONValue{}
-	_ = &svcsdk.ApplicationAutoScaling{}
+	_ = &svcsdk.Client{}
 	_ = &svcapitypes.ScalableTarget{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -49,6 +51,7 @@ var (
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
 	_ = &ackrequeue.NoRequeue{}
+	_ = &aws.Config{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -74,10 +77,11 @@ func (rm *resourceManager) sdkFind(
 	}
 	rm.customDescribeScalableTarget(ctx, r, input)
 	var resp *svcsdk.DescribeScalableTargetsOutput
-	resp, err = rm.sdkapi.DescribeScalableTargetsWithContext(ctx, input)
+	resp, err = rm.sdkapi.DescribeScalableTargets(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalableTargets", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -95,12 +99,14 @@ func (rm *resourceManager) sdkFind(
 			ko.Status.CreationTime = nil
 		}
 		if elem.MaxCapacity != nil {
-			ko.Spec.MaxCapacity = elem.MaxCapacity
+			maxCapacityCopy := int64(*elem.MaxCapacity)
+			ko.Spec.MaxCapacity = &maxCapacityCopy
 		} else {
 			ko.Spec.MaxCapacity = nil
 		}
 		if elem.MinCapacity != nil {
-			ko.Spec.MinCapacity = elem.MinCapacity
+			minCapacityCopy := int64(*elem.MinCapacity)
+			ko.Spec.MinCapacity = &minCapacityCopy
 		} else {
 			ko.Spec.MinCapacity = nil
 		}
@@ -114,28 +120,35 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.RoleARN = nil
 		}
-		if elem.ScalableDimension != nil {
-			ko.Spec.ScalableDimension = elem.ScalableDimension
+		if elem.ScalableDimension != "" {
+			ko.Spec.ScalableDimension = aws.String(string(elem.ScalableDimension))
 		} else {
 			ko.Spec.ScalableDimension = nil
 		}
-		if elem.ServiceNamespace != nil {
-			ko.Spec.ServiceNamespace = elem.ServiceNamespace
+		if elem.ScalableTargetARN != nil {
+			if ko.Status.ACKResourceMetadata == nil {
+				ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+			}
+			tmpARN := ackv1alpha1.AWSResourceName(*elem.ScalableTargetARN)
+			ko.Status.ACKResourceMetadata.ARN = &tmpARN
+		}
+		if elem.ServiceNamespace != "" {
+			ko.Spec.ServiceNamespace = aws.String(string(elem.ServiceNamespace))
 		} else {
 			ko.Spec.ServiceNamespace = nil
 		}
 		if elem.SuspendedState != nil {
-			f7 := &svcapitypes.SuspendedState{}
+			f9 := &svcapitypes.SuspendedState{}
 			if elem.SuspendedState.DynamicScalingInSuspended != nil {
-				f7.DynamicScalingInSuspended = elem.SuspendedState.DynamicScalingInSuspended
+				f9.DynamicScalingInSuspended = elem.SuspendedState.DynamicScalingInSuspended
 			}
 			if elem.SuspendedState.DynamicScalingOutSuspended != nil {
-				f7.DynamicScalingOutSuspended = elem.SuspendedState.DynamicScalingOutSuspended
+				f9.DynamicScalingOutSuspended = elem.SuspendedState.DynamicScalingOutSuspended
 			}
 			if elem.SuspendedState.ScheduledScalingSuspended != nil {
-				f7.ScheduledScalingSuspended = elem.SuspendedState.ScheduledScalingSuspended
+				f9.ScheduledScalingSuspended = elem.SuspendedState.ScheduledScalingSuspended
 			}
-			ko.Spec.SuspendedState = f7
+			ko.Spec.SuspendedState = f9
 		} else {
 			ko.Spec.SuspendedState = nil
 		}
@@ -168,10 +181,10 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.DescribeScalableTargetsInput{}
 
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 
 	return res, nil
@@ -196,7 +209,7 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.RegisterScalableTargetOutput
 	_ = resp
-	resp, err = rm.sdkapi.RegisterScalableTargetWithContext(ctx, input)
+	resp, err = rm.sdkapi.RegisterScalableTarget(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "RegisterScalableTarget", err)
 	if err != nil {
 		return nil, err
@@ -204,6 +217,14 @@ func (rm *resourceManager) sdkCreate(
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
 	ko := desired.ko.DeepCopy()
+
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.ScalableTargetARN != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.ScalableTargetARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
+	}
 
 	rm.setStatusDefaults(ko)
 	return &resource{ko}, nil
@@ -218,35 +239,45 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.RegisterScalableTargetInput{}
 
 	if r.ko.Spec.MaxCapacity != nil {
-		res.SetMaxCapacity(*r.ko.Spec.MaxCapacity)
+		maxCapacityCopy0 := *r.ko.Spec.MaxCapacity
+		if maxCapacityCopy0 > math.MaxInt32 || maxCapacityCopy0 < math.MinInt32 {
+			return nil, fmt.Errorf("error: field MaxCapacity is of type int32")
+		}
+		maxCapacityCopy := int32(maxCapacityCopy0)
+		res.MaxCapacity = &maxCapacityCopy
 	}
 	if r.ko.Spec.MinCapacity != nil {
-		res.SetMinCapacity(*r.ko.Spec.MinCapacity)
+		minCapacityCopy0 := *r.ko.Spec.MinCapacity
+		if minCapacityCopy0 > math.MaxInt32 || minCapacityCopy0 < math.MinInt32 {
+			return nil, fmt.Errorf("error: field MinCapacity is of type int32")
+		}
+		minCapacityCopy := int32(minCapacityCopy0)
+		res.MinCapacity = &minCapacityCopy
 	}
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.RoleARN != nil {
-		res.SetRoleARN(*r.ko.Spec.RoleARN)
+		res.RoleARN = r.ko.Spec.RoleARN
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 	if r.ko.Spec.SuspendedState != nil {
-		f6 := &svcsdk.SuspendedState{}
+		f6 := &svcsdktypes.SuspendedState{}
 		if r.ko.Spec.SuspendedState.DynamicScalingInSuspended != nil {
-			f6.SetDynamicScalingInSuspended(*r.ko.Spec.SuspendedState.DynamicScalingInSuspended)
+			f6.DynamicScalingInSuspended = r.ko.Spec.SuspendedState.DynamicScalingInSuspended
 		}
 		if r.ko.Spec.SuspendedState.DynamicScalingOutSuspended != nil {
-			f6.SetDynamicScalingOutSuspended(*r.ko.Spec.SuspendedState.DynamicScalingOutSuspended)
+			f6.DynamicScalingOutSuspended = r.ko.Spec.SuspendedState.DynamicScalingOutSuspended
 		}
 		if r.ko.Spec.SuspendedState.ScheduledScalingSuspended != nil {
-			f6.SetScheduledScalingSuspended(*r.ko.Spec.SuspendedState.ScheduledScalingSuspended)
+			f6.ScheduledScalingSuspended = r.ko.Spec.SuspendedState.ScheduledScalingSuspended
 		}
-		res.SetSuspendedState(f6)
+		res.SuspendedState = f6
 	}
 
 	return res, nil
@@ -272,7 +303,7 @@ func (rm *resourceManager) sdkUpdate(
 
 	var resp *svcsdk.RegisterScalableTargetOutput
 	_ = resp
-	resp, err = rm.sdkapi.RegisterScalableTargetWithContext(ctx, input)
+	resp, err = rm.sdkapi.RegisterScalableTarget(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "RegisterScalableTarget", err)
 	if err != nil {
 		return nil, err
@@ -280,6 +311,14 @@ func (rm *resourceManager) sdkUpdate(
 	// Merge in the information we read from the API call above to the copy of
 	// the original Kubernetes object we passed to the function
 	ko := desired.ko.DeepCopy()
+
+	if ko.Status.ACKResourceMetadata == nil {
+		ko.Status.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
+	}
+	if resp.ScalableTargetARN != nil {
+		arn := ackv1alpha1.AWSResourceName(*resp.ScalableTargetARN)
+		ko.Status.ACKResourceMetadata.ARN = &arn
+	}
 
 	rm.setStatusDefaults(ko)
 	rm.customSetLastModifiedTimeToCurrentTime(ko)
@@ -296,35 +335,45 @@ func (rm *resourceManager) newUpdateRequestPayload(
 	res := &svcsdk.RegisterScalableTargetInput{}
 
 	if r.ko.Spec.MaxCapacity != nil {
-		res.SetMaxCapacity(*r.ko.Spec.MaxCapacity)
+		maxCapacityCopy0 := *r.ko.Spec.MaxCapacity
+		if maxCapacityCopy0 > math.MaxInt32 || maxCapacityCopy0 < math.MinInt32 {
+			return nil, fmt.Errorf("error: field MaxCapacity is of type int32")
+		}
+		maxCapacityCopy := int32(maxCapacityCopy0)
+		res.MaxCapacity = &maxCapacityCopy
 	}
 	if r.ko.Spec.MinCapacity != nil {
-		res.SetMinCapacity(*r.ko.Spec.MinCapacity)
+		minCapacityCopy0 := *r.ko.Spec.MinCapacity
+		if minCapacityCopy0 > math.MaxInt32 || minCapacityCopy0 < math.MinInt32 {
+			return nil, fmt.Errorf("error: field MinCapacity is of type int32")
+		}
+		minCapacityCopy := int32(minCapacityCopy0)
+		res.MinCapacity = &minCapacityCopy
 	}
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.RoleARN != nil {
-		res.SetRoleARN(*r.ko.Spec.RoleARN)
+		res.RoleARN = r.ko.Spec.RoleARN
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 	if r.ko.Spec.SuspendedState != nil {
-		f6 := &svcsdk.SuspendedState{}
+		f6 := &svcsdktypes.SuspendedState{}
 		if r.ko.Spec.SuspendedState.DynamicScalingInSuspended != nil {
-			f6.SetDynamicScalingInSuspended(*r.ko.Spec.SuspendedState.DynamicScalingInSuspended)
+			f6.DynamicScalingInSuspended = r.ko.Spec.SuspendedState.DynamicScalingInSuspended
 		}
 		if r.ko.Spec.SuspendedState.DynamicScalingOutSuspended != nil {
-			f6.SetDynamicScalingOutSuspended(*r.ko.Spec.SuspendedState.DynamicScalingOutSuspended)
+			f6.DynamicScalingOutSuspended = r.ko.Spec.SuspendedState.DynamicScalingOutSuspended
 		}
 		if r.ko.Spec.SuspendedState.ScheduledScalingSuspended != nil {
-			f6.SetScheduledScalingSuspended(*r.ko.Spec.SuspendedState.ScheduledScalingSuspended)
+			f6.ScheduledScalingSuspended = r.ko.Spec.SuspendedState.ScheduledScalingSuspended
 		}
-		res.SetSuspendedState(f6)
+		res.SuspendedState = f6
 	}
 
 	return res, nil
@@ -346,7 +395,7 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.DeregisterScalableTargetOutput
 	_ = resp
-	resp, err = rm.sdkapi.DeregisterScalableTargetWithContext(ctx, input)
+	resp, err = rm.sdkapi.DeregisterScalableTarget(ctx, input)
 	rm.metrics.RecordAPICall("DELETE", "DeregisterScalableTarget", err)
 	return nil, err
 }
@@ -359,13 +408,13 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.DeregisterScalableTargetInput{}
 
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 
 	return res, nil

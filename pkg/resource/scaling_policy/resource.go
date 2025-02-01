@@ -19,6 +19,7 @@ import (
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackerrors "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	acktypes "github.com/aws-controllers-k8s/runtime/pkg/types"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rtclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -92,11 +93,11 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 
 	f4, f4ok := identifier.AdditionalKeys["scalableDimension"]
 	if f4ok {
-		r.ko.Spec.ScalableDimension = &f4
+		r.ko.Spec.ScalableDimension = aws.String(f4)
 	}
 	f5, f5ok := identifier.AdditionalKeys["serviceNamespace"]
 	if f5ok {
-		r.ko.Spec.ServiceNamespace = &f5
+		r.ko.Spec.ServiceNamespace = aws.String(f5)
 	}
 
 	f6, f6ok := identifier.AdditionalKeys["policyName"]
@@ -116,11 +117,11 @@ func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) erro
 
 	f4, f4ok := fields["scalableDimension"]
 	if f4ok {
-		r.ko.Spec.ScalableDimension = &f4
+		r.ko.Spec.ScalableDimension = aws.String(f4)
 	}
 	f5, f5ok := fields["serviceNamespace"]
 	if f5ok {
-		r.ko.Spec.ServiceNamespace = &f5
+		r.ko.Spec.ServiceNamespace = aws.String(f5)
 	}
 
 	f6, f6ok := fields["policyName"]
