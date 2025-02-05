@@ -1,17 +1,19 @@
+sdk_names:
+  model_name: application-auto-scaling
 operations:
   PutScalingPolicy:
-    operation_type: 
-     - Create
-     - Update
+    operation_type:
+      - Create
+      - Update
     resource_name: ScalingPolicy
   RegisterScalableTarget:
-    operation_type: 
-     - Create
-     - Update
+    operation_type:
+      - Create
+      - Update
     resource_name: ScalableTarget
   DeregisterScalableTarget:
-    operation_type: 
-     - Delete
+    operation_type:
+      - Delete
     resource_name: ScalableTarget
   DescribeScalableTargets:
     custom_check_required_fields_missing_method: customCheckRequiredFieldsMissing
@@ -61,7 +63,7 @@ resources:
     fields:
       ResourceID:
         is_primary_key: true
-      PolicyARN: 
+      PolicyARN:
         is_arn: true
       CreationTime:
         is_read_only: true
@@ -76,6 +78,9 @@ resources:
     tags:
       ignore: true
 ignore:
-    resource_names:
-      - ScheduledAction
-      
+  resource_names:
+    - ScheduledAction
+  field_paths:
+    - RegisterScalableTargetInput.Tags
+    - PutScalingPolicyInput.PredictiveScalingPolicyConfiguration
+    - CustomizedMetricSpecification.Metrics

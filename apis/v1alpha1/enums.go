@@ -19,24 +19,24 @@ type AdjustmentType string
 
 const (
 	AdjustmentType_ChangeInCapacity        AdjustmentType = "ChangeInCapacity"
-	AdjustmentType_PercentChangeInCapacity AdjustmentType = "PercentChangeInCapacity"
 	AdjustmentType_ExactCapacity           AdjustmentType = "ExactCapacity"
+	AdjustmentType_PercentChangeInCapacity AdjustmentType = "PercentChangeInCapacity"
 )
 
 type MetricAggregationType string
 
 const (
 	MetricAggregationType_Average MetricAggregationType = "Average"
-	MetricAggregationType_Minimum MetricAggregationType = "Minimum"
 	MetricAggregationType_Maximum MetricAggregationType = "Maximum"
+	MetricAggregationType_Minimum MetricAggregationType = "Minimum"
 )
 
 type MetricStatistic string
 
 const (
 	MetricStatistic_Average     MetricStatistic = "Average"
-	MetricStatistic_Minimum     MetricStatistic = "Minimum"
 	MetricStatistic_Maximum     MetricStatistic = "Maximum"
+	MetricStatistic_Minimum     MetricStatistic = "Minimum"
 	MetricStatistic_SampleCount MetricStatistic = "SampleCount"
 	MetricStatistic_Sum         MetricStatistic = "Sum"
 )
@@ -44,87 +44,112 @@ const (
 type MetricType string
 
 const (
-	MetricType_DynamoDBReadCapacityUtilization                         MetricType = "DynamoDBReadCapacityUtilization"
-	MetricType_DynamoDBWriteCapacityUtilization                        MetricType = "DynamoDBWriteCapacityUtilization"
-	MetricType_ALBRequestCountPerTarget                                MetricType = "ALBRequestCountPerTarget"
-	MetricType_RDSReaderAverageCPUUtilization                          MetricType = "RDSReaderAverageCPUUtilization"
-	MetricType_RDSReaderAverageDatabaseConnections                     MetricType = "RDSReaderAverageDatabaseConnections"
-	MetricType_EC2SpotFleetRequestAverageCPUUtilization                MetricType = "EC2SpotFleetRequestAverageCPUUtilization"
-	MetricType_EC2SpotFleetRequestAverageNetworkIn                     MetricType = "EC2SpotFleetRequestAverageNetworkIn"
-	MetricType_EC2SpotFleetRequestAverageNetworkOut                    MetricType = "EC2SpotFleetRequestAverageNetworkOut"
-	MetricType_SageMakerVariantInvocationsPerInstance                  MetricType = "SageMakerVariantInvocationsPerInstance"
-	MetricType_ECSServiceAverageCPUUtilization                         MetricType = "ECSServiceAverageCPUUtilization"
-	MetricType_ECSServiceAverageMemoryUtilization                      MetricType = "ECSServiceAverageMemoryUtilization"
-	MetricType_AppStreamAverageCapacityUtilization                     MetricType = "AppStreamAverageCapacityUtilization"
-	MetricType_ComprehendInferenceUtilization                          MetricType = "ComprehendInferenceUtilization"
-	MetricType_LambdaProvisionedConcurrencyUtilization                 MetricType = "LambdaProvisionedConcurrencyUtilization"
-	MetricType_CassandraReadCapacityUtilization                        MetricType = "CassandraReadCapacityUtilization"
-	MetricType_CassandraWriteCapacityUtilization                       MetricType = "CassandraWriteCapacityUtilization"
-	MetricType_KafkaBrokerStorageUtilization                           MetricType = "KafkaBrokerStorageUtilization"
-	MetricType_ElastiCachePrimaryEngineCPUUtilization                  MetricType = "ElastiCachePrimaryEngineCPUUtilization"
-	MetricType_ElastiCacheReplicaEngineCPUUtilization                  MetricType = "ElastiCacheReplicaEngineCPUUtilization"
-	MetricType_ElastiCacheDatabaseMemoryUsageCountedForEvictPercentage MetricType = "ElastiCacheDatabaseMemoryUsageCountedForEvictPercentage"
-	MetricType_NeptuneReaderAverageCPUUtilization                      MetricType = "NeptuneReaderAverageCPUUtilization"
+	MetricType_ALBRequestCountPerTarget                                           MetricType = "ALBRequestCountPerTarget"
+	MetricType_AppStreamAverageCapacityUtilization                                MetricType = "AppStreamAverageCapacityUtilization"
+	MetricType_CassandraReadCapacityUtilization                                   MetricType = "CassandraReadCapacityUtilization"
+	MetricType_CassandraWriteCapacityUtilization                                  MetricType = "CassandraWriteCapacityUtilization"
+	MetricType_ComprehendInferenceUtilization                                     MetricType = "ComprehendInferenceUtilization"
+	MetricType_DynamoDBReadCapacityUtilization                                    MetricType = "DynamoDBReadCapacityUtilization"
+	MetricType_DynamoDBWriteCapacityUtilization                                   MetricType = "DynamoDBWriteCapacityUtilization"
+	MetricType_EC2SpotFleetRequestAverageCPUUtilization                           MetricType = "EC2SpotFleetRequestAverageCPUUtilization"
+	MetricType_EC2SpotFleetRequestAverageNetworkIn                                MetricType = "EC2SpotFleetRequestAverageNetworkIn"
+	MetricType_EC2SpotFleetRequestAverageNetworkOut                               MetricType = "EC2SpotFleetRequestAverageNetworkOut"
+	MetricType_ECSServiceAverageCPUUtilization                                    MetricType = "ECSServiceAverageCPUUtilization"
+	MetricType_ECSServiceAverageMemoryUtilization                                 MetricType = "ECSServiceAverageMemoryUtilization"
+	MetricType_ElastiCacheDatabaseCapacityUsageCountedForEvictPercentage          MetricType = "ElastiCacheDatabaseCapacityUsageCountedForEvictPercentage"
+	MetricType_ElastiCacheDatabaseMemoryUsageCountedForEvictPercentage            MetricType = "ElastiCacheDatabaseMemoryUsageCountedForEvictPercentage"
+	MetricType_ElastiCachePrimaryEngineCPUUtilization                             MetricType = "ElastiCachePrimaryEngineCPUUtilization"
+	MetricType_ElastiCacheReplicaEngineCPUUtilization                             MetricType = "ElastiCacheReplicaEngineCPUUtilization"
+	MetricType_KafkaBrokerStorageUtilization                                      MetricType = "KafkaBrokerStorageUtilization"
+	MetricType_LambdaProvisionedConcurrencyUtilization                            MetricType = "LambdaProvisionedConcurrencyUtilization"
+	MetricType_NeptuneReaderAverageCPUUtilization                                 MetricType = "NeptuneReaderAverageCPUUtilization"
+	MetricType_RDSReaderAverageCPUUtilization                                     MetricType = "RDSReaderAverageCPUUtilization"
+	MetricType_RDSReaderAverageDatabaseConnections                                MetricType = "RDSReaderAverageDatabaseConnections"
+	MetricType_SageMakerInferenceComponentConcurrentRequestsPerCopyHighResolution MetricType = "SageMakerInferenceComponentConcurrentRequestsPerCopyHighResolution"
+	MetricType_SageMakerInferenceComponentInvocationsPerCopy                      MetricType = "SageMakerInferenceComponentInvocationsPerCopy"
+	MetricType_SageMakerVariantConcurrentRequestsPerModelHighResolution           MetricType = "SageMakerVariantConcurrentRequestsPerModelHighResolution"
+	MetricType_SageMakerVariantInvocationsPerInstance                             MetricType = "SageMakerVariantInvocationsPerInstance"
+	MetricType_SageMakerVariantProvisionedConcurrencyUtilization                  MetricType = "SageMakerVariantProvisionedConcurrencyUtilization"
+	MetricType_WorkSpacesAverageUserSessionsCapacityUtilization                   MetricType = "WorkSpacesAverageUserSessionsCapacityUtilization"
 )
 
 type PolicyType string
 
 const (
+	PolicyType_PredictiveScaling     PolicyType = "PredictiveScaling"
 	PolicyType_StepScaling           PolicyType = "StepScaling"
 	PolicyType_TargetTrackingScaling PolicyType = "TargetTrackingScaling"
+)
+
+type PredictiveScalingMaxCapacityBreachBehavior string
+
+const (
+	PredictiveScalingMaxCapacityBreachBehavior_HonorMaxCapacity    PredictiveScalingMaxCapacityBreachBehavior = "HonorMaxCapacity"
+	PredictiveScalingMaxCapacityBreachBehavior_IncreaseMaxCapacity PredictiveScalingMaxCapacityBreachBehavior = "IncreaseMaxCapacity"
+)
+
+type PredictiveScalingMode string
+
+const (
+	PredictiveScalingMode_ForecastAndScale PredictiveScalingMode = "ForecastAndScale"
+	PredictiveScalingMode_ForecastOnly     PredictiveScalingMode = "ForecastOnly"
 )
 
 type ScalableDimension string
 
 const (
-	ScalableDimension_ecs_service_DesiredCount                                      ScalableDimension = "ecs:service:DesiredCount"
-	ScalableDimension_ec2_spot_fleet_request_TargetCapacity                         ScalableDimension = "ec2:spot-fleet-request:TargetCapacity"
-	ScalableDimension_elasticmapreduce_instancegroup_InstanceCount                  ScalableDimension = "elasticmapreduce:instancegroup:InstanceCount"
 	ScalableDimension_appstream_fleet_DesiredCapacity                               ScalableDimension = "appstream:fleet:DesiredCapacity"
-	ScalableDimension_dynamodb_table_ReadCapacityUnits                              ScalableDimension = "dynamodb:table:ReadCapacityUnits"
-	ScalableDimension_dynamodb_table_WriteCapacityUnits                             ScalableDimension = "dynamodb:table:WriteCapacityUnits"
-	ScalableDimension_dynamodb_index_ReadCapacityUnits                              ScalableDimension = "dynamodb:index:ReadCapacityUnits"
-	ScalableDimension_dynamodb_index_WriteCapacityUnits                             ScalableDimension = "dynamodb:index:WriteCapacityUnits"
-	ScalableDimension_rds_cluster_ReadReplicaCount                                  ScalableDimension = "rds:cluster:ReadReplicaCount"
-	ScalableDimension_sagemaker_variant_DesiredInstanceCount                        ScalableDimension = "sagemaker:variant:DesiredInstanceCount"
-	ScalableDimension_custom_resource_ResourceType_Property                         ScalableDimension = "custom-resource:ResourceType:Property"
-	ScalableDimension_comprehend_document_classifier_endpoint_DesiredInferenceUnits ScalableDimension = "comprehend:document-classifier-endpoint:DesiredInferenceUnits"
-	ScalableDimension_comprehend_entity_recognizer_endpoint_DesiredInferenceUnits   ScalableDimension = "comprehend:entity-recognizer-endpoint:DesiredInferenceUnits"
-	ScalableDimension_lambda_function_ProvisionedConcurrency                        ScalableDimension = "lambda:function:ProvisionedConcurrency"
 	ScalableDimension_cassandra_table_ReadCapacityUnits                             ScalableDimension = "cassandra:table:ReadCapacityUnits"
 	ScalableDimension_cassandra_table_WriteCapacityUnits                            ScalableDimension = "cassandra:table:WriteCapacityUnits"
-	ScalableDimension_kafka_broker_storage_VolumeSize                               ScalableDimension = "kafka:broker-storage:VolumeSize"
+	ScalableDimension_comprehend_document_classifier_endpoint_DesiredInferenceUnits ScalableDimension = "comprehend:document-classifier-endpoint:DesiredInferenceUnits"
+	ScalableDimension_comprehend_entity_recognizer_endpoint_DesiredInferenceUnits   ScalableDimension = "comprehend:entity-recognizer-endpoint:DesiredInferenceUnits"
+	ScalableDimension_custom_resource_ResourceType_Property                         ScalableDimension = "custom-resource:ResourceType:Property"
+	ScalableDimension_dynamodb_index_ReadCapacityUnits                              ScalableDimension = "dynamodb:index:ReadCapacityUnits"
+	ScalableDimension_dynamodb_index_WriteCapacityUnits                             ScalableDimension = "dynamodb:index:WriteCapacityUnits"
+	ScalableDimension_dynamodb_table_ReadCapacityUnits                              ScalableDimension = "dynamodb:table:ReadCapacityUnits"
+	ScalableDimension_dynamodb_table_WriteCapacityUnits                             ScalableDimension = "dynamodb:table:WriteCapacityUnits"
+	ScalableDimension_ec2_spot_fleet_request_TargetCapacity                         ScalableDimension = "ec2:spot-fleet-request:TargetCapacity"
+	ScalableDimension_ecs_service_DesiredCount                                      ScalableDimension = "ecs:service:DesiredCount"
 	ScalableDimension_elasticache_replication_group_NodeGroups                      ScalableDimension = "elasticache:replication-group:NodeGroups"
 	ScalableDimension_elasticache_replication_group_Replicas                        ScalableDimension = "elasticache:replication-group:Replicas"
+	ScalableDimension_elasticmapreduce_instancegroup_InstanceCount                  ScalableDimension = "elasticmapreduce:instancegroup:InstanceCount"
+	ScalableDimension_kafka_broker_storage_VolumeSize                               ScalableDimension = "kafka:broker-storage:VolumeSize"
+	ScalableDimension_lambda_function_ProvisionedConcurrency                        ScalableDimension = "lambda:function:ProvisionedConcurrency"
 	ScalableDimension_neptune_cluster_ReadReplicaCount                              ScalableDimension = "neptune:cluster:ReadReplicaCount"
+	ScalableDimension_rds_cluster_ReadReplicaCount                                  ScalableDimension = "rds:cluster:ReadReplicaCount"
+	ScalableDimension_sagemaker_inference_component_DesiredCopyCount                ScalableDimension = "sagemaker:inference-component:DesiredCopyCount"
+	ScalableDimension_sagemaker_variant_DesiredInstanceCount                        ScalableDimension = "sagemaker:variant:DesiredInstanceCount"
+	ScalableDimension_sagemaker_variant_DesiredProvisionedConcurrency               ScalableDimension = "sagemaker:variant:DesiredProvisionedConcurrency"
+	ScalableDimension_workspaces_workspacespool_DesiredUserSessions                 ScalableDimension = "workspaces:workspacespool:DesiredUserSessions"
 )
 
 type ScalingActivityStatusCode string
 
 const (
-	ScalingActivityStatusCode_Pending     ScalingActivityStatusCode = "Pending"
-	ScalingActivityStatusCode_InProgress  ScalingActivityStatusCode = "InProgress"
-	ScalingActivityStatusCode_Successful  ScalingActivityStatusCode = "Successful"
-	ScalingActivityStatusCode_Overridden  ScalingActivityStatusCode = "Overridden"
-	ScalingActivityStatusCode_Unfulfilled ScalingActivityStatusCode = "Unfulfilled"
 	ScalingActivityStatusCode_Failed      ScalingActivityStatusCode = "Failed"
+	ScalingActivityStatusCode_InProgress  ScalingActivityStatusCode = "InProgress"
+	ScalingActivityStatusCode_Overridden  ScalingActivityStatusCode = "Overridden"
+	ScalingActivityStatusCode_Pending     ScalingActivityStatusCode = "Pending"
+	ScalingActivityStatusCode_Successful  ScalingActivityStatusCode = "Successful"
+	ScalingActivityStatusCode_Unfulfilled ScalingActivityStatusCode = "Unfulfilled"
 )
 
 type ServiceNamespace string
 
 const (
-	ServiceNamespace_ecs              ServiceNamespace = "ecs"
-	ServiceNamespace_elasticmapreduce ServiceNamespace = "elasticmapreduce"
-	ServiceNamespace_ec2              ServiceNamespace = "ec2"
 	ServiceNamespace_appstream        ServiceNamespace = "appstream"
+	ServiceNamespace_cassandra        ServiceNamespace = "cassandra"
+	ServiceNamespace_comprehend       ServiceNamespace = "comprehend"
+	ServiceNamespace_custom_resource  ServiceNamespace = "custom-resource"
 	ServiceNamespace_dynamodb         ServiceNamespace = "dynamodb"
+	ServiceNamespace_ec2              ServiceNamespace = "ec2"
+	ServiceNamespace_ecs              ServiceNamespace = "ecs"
+	ServiceNamespace_elasticache      ServiceNamespace = "elasticache"
+	ServiceNamespace_elasticmapreduce ServiceNamespace = "elasticmapreduce"
+	ServiceNamespace_kafka            ServiceNamespace = "kafka"
+	ServiceNamespace_lambda           ServiceNamespace = "lambda"
+	ServiceNamespace_neptune          ServiceNamespace = "neptune"
 	ServiceNamespace_rds              ServiceNamespace = "rds"
 	ServiceNamespace_sagemaker        ServiceNamespace = "sagemaker"
-	ServiceNamespace_custom_resource  ServiceNamespace = "custom-resource"
-	ServiceNamespace_comprehend       ServiceNamespace = "comprehend"
-	ServiceNamespace_lambda           ServiceNamespace = "lambda"
-	ServiceNamespace_cassandra        ServiceNamespace = "cassandra"
-	ServiceNamespace_kafka            ServiceNamespace = "kafka"
-	ServiceNamespace_elasticache      ServiceNamespace = "elasticache"
-	ServiceNamespace_neptune          ServiceNamespace = "neptune"
+	ServiceNamespace_workspaces       ServiceNamespace = "workspaces"
 )

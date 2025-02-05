@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 
@@ -28,8 +29,10 @@ import (
 	ackerr "github.com/aws-controllers-k8s/runtime/pkg/errors"
 	ackrequeue "github.com/aws-controllers-k8s/runtime/pkg/requeue"
 	ackrtlog "github.com/aws-controllers-k8s/runtime/pkg/runtime/log"
-	"github.com/aws/aws-sdk-go/aws"
-	svcsdk "github.com/aws/aws-sdk-go/service/applicationautoscaling"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	svcsdk "github.com/aws/aws-sdk-go-v2/service/applicationautoscaling"
+	svcsdktypes "github.com/aws/aws-sdk-go-v2/service/applicationautoscaling/types"
+	smithy "github.com/aws/smithy-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -40,8 +43,7 @@ import (
 var (
 	_ = &metav1.Time{}
 	_ = strings.ToLower("")
-	_ = &aws.JSONValue{}
-	_ = &svcsdk.ApplicationAutoScaling{}
+	_ = &svcsdk.Client{}
 	_ = &svcapitypes.ScalingPolicy{}
 	_ = ackv1alpha1.AWSAccountID("")
 	_ = &ackerr.NotFound
@@ -49,6 +51,7 @@ var (
 	_ = &reflect.Value{}
 	_ = fmt.Sprintf("")
 	_ = &ackrequeue.NoRequeue{}
+	_ = &aws.Config{}
 )
 
 // sdkFind returns SDK-specific information about a supplied resource
@@ -74,10 +77,11 @@ func (rm *resourceManager) sdkFind(
 	}
 	rm.customSetDescribeScalingPoliciesInput(ctx, r, input)
 	var resp *svcsdk.DescribeScalingPoliciesOutput
-	resp, err = rm.sdkapi.DescribeScalingPoliciesWithContext(ctx, input)
+	resp, err = rm.sdkapi.DescribeScalingPolicies(ctx, input)
 	rm.metrics.RecordAPICall("READ_MANY", "DescribeScalingPolicies", err)
 	if err != nil {
-		if awsErr, ok := ackerr.AWSError(err); ok && awsErr.Code() == "UNKNOWN" {
+		var awsErr smithy.APIError
+		if errors.As(err, &awsErr) && awsErr.ErrorCode() == "UNKNOWN" {
 			return nil, ackerr.NotFound
 		}
 		return nil, err
@@ -122,8 +126,8 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.PolicyName = nil
 		}
-		if elem.PolicyType != nil {
-			ko.Spec.PolicyType = elem.PolicyType
+		if elem.PolicyType != "" {
+			ko.Spec.PolicyType = aws.String(string(elem.PolicyType))
 		} else {
 			ko.Spec.PolicyType = nil
 		}
@@ -132,106 +136,111 @@ func (rm *resourceManager) sdkFind(
 		} else {
 			ko.Spec.ResourceID = nil
 		}
-		if elem.ScalableDimension != nil {
-			ko.Spec.ScalableDimension = elem.ScalableDimension
+		if elem.ScalableDimension != "" {
+			ko.Spec.ScalableDimension = aws.String(string(elem.ScalableDimension))
 		} else {
 			ko.Spec.ScalableDimension = nil
 		}
-		if elem.ServiceNamespace != nil {
-			ko.Spec.ServiceNamespace = elem.ServiceNamespace
+		if elem.ServiceNamespace != "" {
+			ko.Spec.ServiceNamespace = aws.String(string(elem.ServiceNamespace))
 		} else {
 			ko.Spec.ServiceNamespace = nil
 		}
 		if elem.StepScalingPolicyConfiguration != nil {
-			f8 := &svcapitypes.StepScalingPolicyConfiguration{}
-			if elem.StepScalingPolicyConfiguration.AdjustmentType != nil {
-				f8.AdjustmentType = elem.StepScalingPolicyConfiguration.AdjustmentType
+			f9 := &svcapitypes.StepScalingPolicyConfiguration{}
+			if elem.StepScalingPolicyConfiguration.AdjustmentType != "" {
+				f9.AdjustmentType = aws.String(string(elem.StepScalingPolicyConfiguration.AdjustmentType))
 			}
 			if elem.StepScalingPolicyConfiguration.Cooldown != nil {
-				f8.Cooldown = elem.StepScalingPolicyConfiguration.Cooldown
+				cooldownCopy := int64(*elem.StepScalingPolicyConfiguration.Cooldown)
+				f9.Cooldown = &cooldownCopy
 			}
-			if elem.StepScalingPolicyConfiguration.MetricAggregationType != nil {
-				f8.MetricAggregationType = elem.StepScalingPolicyConfiguration.MetricAggregationType
+			if elem.StepScalingPolicyConfiguration.MetricAggregationType != "" {
+				f9.MetricAggregationType = aws.String(string(elem.StepScalingPolicyConfiguration.MetricAggregationType))
 			}
 			if elem.StepScalingPolicyConfiguration.MinAdjustmentMagnitude != nil {
-				f8.MinAdjustmentMagnitude = elem.StepScalingPolicyConfiguration.MinAdjustmentMagnitude
+				minAdjustmentMagnitudeCopy := int64(*elem.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
+				f9.MinAdjustmentMagnitude = &minAdjustmentMagnitudeCopy
 			}
 			if elem.StepScalingPolicyConfiguration.StepAdjustments != nil {
-				f8f4 := []*svcapitypes.StepAdjustment{}
-				for _, f8f4iter := range elem.StepScalingPolicyConfiguration.StepAdjustments {
-					f8f4elem := &svcapitypes.StepAdjustment{}
-					if f8f4iter.MetricIntervalLowerBound != nil {
-						f8f4elem.MetricIntervalLowerBound = f8f4iter.MetricIntervalLowerBound
+				f9f4 := []*svcapitypes.StepAdjustment{}
+				for _, f9f4iter := range elem.StepScalingPolicyConfiguration.StepAdjustments {
+					f9f4elem := &svcapitypes.StepAdjustment{}
+					if f9f4iter.MetricIntervalLowerBound != nil {
+						f9f4elem.MetricIntervalLowerBound = f9f4iter.MetricIntervalLowerBound
 					}
-					if f8f4iter.MetricIntervalUpperBound != nil {
-						f8f4elem.MetricIntervalUpperBound = f8f4iter.MetricIntervalUpperBound
+					if f9f4iter.MetricIntervalUpperBound != nil {
+						f9f4elem.MetricIntervalUpperBound = f9f4iter.MetricIntervalUpperBound
 					}
-					if f8f4iter.ScalingAdjustment != nil {
-						f8f4elem.ScalingAdjustment = f8f4iter.ScalingAdjustment
+					if f9f4iter.ScalingAdjustment != nil {
+						scalingAdjustmentCopy := int64(*f9f4iter.ScalingAdjustment)
+						f9f4elem.ScalingAdjustment = &scalingAdjustmentCopy
 					}
-					f8f4 = append(f8f4, f8f4elem)
+					f9f4 = append(f9f4, f9f4elem)
 				}
-				f8.StepAdjustments = f8f4
+				f9.StepAdjustments = f9f4
 			}
-			ko.Spec.StepScalingPolicyConfiguration = f8
+			ko.Spec.StepScalingPolicyConfiguration = f9
 		} else {
 			ko.Spec.StepScalingPolicyConfiguration = nil
 		}
 		if elem.TargetTrackingScalingPolicyConfiguration != nil {
-			f9 := &svcapitypes.TargetTrackingScalingPolicyConfiguration{}
+			f10 := &svcapitypes.TargetTrackingScalingPolicyConfiguration{}
 			if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
-				f9f0 := &svcapitypes.CustomizedMetricSpecification{}
+				f10f0 := &svcapitypes.CustomizedMetricSpecification{}
 				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions != nil {
-					f9f0f0 := []*svcapitypes.MetricDimension{}
-					for _, f9f0f0iter := range elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions {
-						f9f0f0elem := &svcapitypes.MetricDimension{}
-						if f9f0f0iter.Name != nil {
-							f9f0f0elem.Name = f9f0f0iter.Name
+					f10f0f0 := []*svcapitypes.MetricDimension{}
+					for _, f10f0f0iter := range elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions {
+						f10f0f0elem := &svcapitypes.MetricDimension{}
+						if f10f0f0iter.Name != nil {
+							f10f0f0elem.Name = f10f0f0iter.Name
 						}
-						if f9f0f0iter.Value != nil {
-							f9f0f0elem.Value = f9f0f0iter.Value
+						if f10f0f0iter.Value != nil {
+							f10f0f0elem.Value = f10f0f0iter.Value
 						}
-						f9f0f0 = append(f9f0f0, f9f0f0elem)
+						f10f0f0 = append(f10f0f0, f10f0f0elem)
 					}
-					f9f0.Dimensions = f9f0f0
+					f10f0.Dimensions = f10f0f0
 				}
 				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
-					f9f0.MetricName = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName
+					f10f0.MetricName = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName
 				}
 				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
-					f9f0.Namespace = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace
+					f10f0.Namespace = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace
 				}
-				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic != nil {
-					f9f0.Statistic = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic
+				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic != "" {
+					f10f0.Statistic = aws.String(string(elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic))
 				}
 				if elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit != nil {
-					f9f0.Unit = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit
+					f10f0.Unit = elem.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit
 				}
-				f9.CustomizedMetricSpecification = f9f0
+				f10.CustomizedMetricSpecification = f10f0
 			}
 			if elem.TargetTrackingScalingPolicyConfiguration.DisableScaleIn != nil {
-				f9.DisableScaleIn = elem.TargetTrackingScalingPolicyConfiguration.DisableScaleIn
+				f10.DisableScaleIn = elem.TargetTrackingScalingPolicyConfiguration.DisableScaleIn
 			}
 			if elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification != nil {
-				f9f2 := &svcapitypes.PredefinedMetricSpecification{}
-				if elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType != nil {
-					f9f2.PredefinedMetricType = elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType
+				f10f2 := &svcapitypes.PredefinedMetricSpecification{}
+				if elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType != "" {
+					f10f2.PredefinedMetricType = aws.String(string(elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType))
 				}
 				if elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel != nil {
-					f9f2.ResourceLabel = elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel
+					f10f2.ResourceLabel = elem.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel
 				}
-				f9.PredefinedMetricSpecification = f9f2
+				f10.PredefinedMetricSpecification = f10f2
 			}
 			if elem.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown != nil {
-				f9.ScaleInCooldown = elem.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown
+				scaleInCooldownCopy := int64(*elem.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown)
+				f10.ScaleInCooldown = &scaleInCooldownCopy
 			}
 			if elem.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown != nil {
-				f9.ScaleOutCooldown = elem.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown
+				scaleOutCooldownCopy := int64(*elem.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown)
+				f10.ScaleOutCooldown = &scaleOutCooldownCopy
 			}
 			if elem.TargetTrackingScalingPolicyConfiguration.TargetValue != nil {
-				f9.TargetValue = elem.TargetTrackingScalingPolicyConfiguration.TargetValue
+				f10.TargetValue = elem.TargetTrackingScalingPolicyConfiguration.TargetValue
 			}
-			ko.Spec.TargetTrackingScalingPolicyConfiguration = f9
+			ko.Spec.TargetTrackingScalingPolicyConfiguration = f10
 		} else {
 			ko.Spec.TargetTrackingScalingPolicyConfiguration = nil
 		}
@@ -264,13 +273,13 @@ func (rm *resourceManager) newListRequestPayload(
 	res := &svcsdk.DescribeScalingPoliciesInput{}
 
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 
 	return res, nil
@@ -295,7 +304,7 @@ func (rm *resourceManager) sdkCreate(
 
 	var resp *svcsdk.PutScalingPolicyOutput
 	_ = resp
-	resp, err = rm.sdkapi.PutScalingPolicyWithContext(ctx, input)
+	resp, err = rm.sdkapi.PutScalingPolicy(ctx, input)
 	rm.metrics.RecordAPICall("CREATE", "PutScalingPolicy", err)
 	if err != nil {
 		return nil, err
@@ -341,108 +350,133 @@ func (rm *resourceManager) newCreateRequestPayload(
 	res := &svcsdk.PutScalingPolicyInput{}
 
 	if r.ko.Spec.PolicyName != nil {
-		res.SetPolicyName(*r.ko.Spec.PolicyName)
+		res.PolicyName = r.ko.Spec.PolicyName
 	}
 	if r.ko.Spec.PolicyType != nil {
-		res.SetPolicyType(*r.ko.Spec.PolicyType)
+		res.PolicyType = svcsdktypes.PolicyType(*r.ko.Spec.PolicyType)
 	}
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 	if r.ko.Spec.StepScalingPolicyConfiguration != nil {
-		f5 := &svcsdk.StepScalingPolicyConfiguration{}
+		f5 := &svcsdktypes.StepScalingPolicyConfiguration{}
 		if r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType != nil {
-			f5.SetAdjustmentType(*r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType)
+			f5.AdjustmentType = svcsdktypes.AdjustmentType(*r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType)
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.Cooldown != nil {
-			f5.SetCooldown(*r.ko.Spec.StepScalingPolicyConfiguration.Cooldown)
+			cooldownCopy0 := *r.ko.Spec.StepScalingPolicyConfiguration.Cooldown
+			if cooldownCopy0 > math.MaxInt32 || cooldownCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field Cooldown is of type int32")
+			}
+			cooldownCopy := int32(cooldownCopy0)
+			f5.Cooldown = &cooldownCopy
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType != nil {
-			f5.SetMetricAggregationType(*r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType)
+			f5.MetricAggregationType = svcsdktypes.MetricAggregationType(*r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType)
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude != nil {
-			f5.SetMinAdjustmentMagnitude(*r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
+			minAdjustmentMagnitudeCopy0 := *r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude
+			if minAdjustmentMagnitudeCopy0 > math.MaxInt32 || minAdjustmentMagnitudeCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field MinAdjustmentMagnitude is of type int32")
+			}
+			minAdjustmentMagnitudeCopy := int32(minAdjustmentMagnitudeCopy0)
+			f5.MinAdjustmentMagnitude = &minAdjustmentMagnitudeCopy
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments != nil {
-			f5f4 := []*svcsdk.StepAdjustment{}
+			f5f4 := []svcsdktypes.StepAdjustment{}
 			for _, f5f4iter := range r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments {
-				f5f4elem := &svcsdk.StepAdjustment{}
+				f5f4elem := &svcsdktypes.StepAdjustment{}
 				if f5f4iter.MetricIntervalLowerBound != nil {
-					f5f4elem.SetMetricIntervalLowerBound(*f5f4iter.MetricIntervalLowerBound)
+					f5f4elem.MetricIntervalLowerBound = f5f4iter.MetricIntervalLowerBound
 				}
 				if f5f4iter.MetricIntervalUpperBound != nil {
-					f5f4elem.SetMetricIntervalUpperBound(*f5f4iter.MetricIntervalUpperBound)
+					f5f4elem.MetricIntervalUpperBound = f5f4iter.MetricIntervalUpperBound
 				}
 				if f5f4iter.ScalingAdjustment != nil {
-					f5f4elem.SetScalingAdjustment(*f5f4iter.ScalingAdjustment)
+					scalingAdjustmentCopy0 := *f5f4iter.ScalingAdjustment
+					if scalingAdjustmentCopy0 > math.MaxInt32 || scalingAdjustmentCopy0 < math.MinInt32 {
+						return nil, fmt.Errorf("error: field ScalingAdjustment is of type int32")
+					}
+					scalingAdjustmentCopy := int32(scalingAdjustmentCopy0)
+					f5f4elem.ScalingAdjustment = &scalingAdjustmentCopy
 				}
-				f5f4 = append(f5f4, f5f4elem)
+				f5f4 = append(f5f4, *f5f4elem)
 			}
-			f5.SetStepAdjustments(f5f4)
+			f5.StepAdjustments = f5f4
 		}
-		res.SetStepScalingPolicyConfiguration(f5)
+		res.StepScalingPolicyConfiguration = f5
 	}
 	if r.ko.Spec.TargetTrackingScalingPolicyConfiguration != nil {
-		f6 := &svcsdk.TargetTrackingScalingPolicyConfiguration{}
+		f6 := &svcsdktypes.TargetTrackingScalingPolicyConfiguration{}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
-			f6f0 := &svcsdk.CustomizedMetricSpecification{}
+			f6f0 := &svcsdktypes.CustomizedMetricSpecification{}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions != nil {
-				f6f0f0 := []*svcsdk.MetricDimension{}
+				f6f0f0 := []svcsdktypes.MetricDimension{}
 				for _, f6f0f0iter := range r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions {
-					f6f0f0elem := &svcsdk.MetricDimension{}
+					f6f0f0elem := &svcsdktypes.MetricDimension{}
 					if f6f0f0iter.Name != nil {
-						f6f0f0elem.SetName(*f6f0f0iter.Name)
+						f6f0f0elem.Name = f6f0f0iter.Name
 					}
 					if f6f0f0iter.Value != nil {
-						f6f0f0elem.SetValue(*f6f0f0iter.Value)
+						f6f0f0elem.Value = f6f0f0iter.Value
 					}
-					f6f0f0 = append(f6f0f0, f6f0f0elem)
+					f6f0f0 = append(f6f0f0, *f6f0f0elem)
 				}
-				f6f0.SetDimensions(f6f0f0)
+				f6f0.Dimensions = f6f0f0
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
-				f6f0.SetMetricName(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
+				f6f0.MetricName = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
-				f6f0.SetNamespace(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace)
+				f6f0.Namespace = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic != nil {
-				f6f0.SetStatistic(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic)
+				f6f0.Statistic = svcsdktypes.MetricStatistic(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic)
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit != nil {
-				f6f0.SetUnit(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit)
+				f6f0.Unit = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit
 			}
-			f6.SetCustomizedMetricSpecification(f6f0)
+			f6.CustomizedMetricSpecification = f6f0
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn != nil {
-			f6.SetDisableScaleIn(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn)
+			f6.DisableScaleIn = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification != nil {
-			f6f2 := &svcsdk.PredefinedMetricSpecification{}
+			f6f2 := &svcsdktypes.PredefinedMetricSpecification{}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType != nil {
-				f6f2.SetPredefinedMetricType(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType)
+				f6f2.PredefinedMetricType = svcsdktypes.MetricType(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType)
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel != nil {
-				f6f2.SetResourceLabel(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel)
+				f6f2.ResourceLabel = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel
 			}
-			f6.SetPredefinedMetricSpecification(f6f2)
+			f6.PredefinedMetricSpecification = f6f2
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown != nil {
-			f6.SetScaleInCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown)
+			scaleInCooldownCopy0 := *r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown
+			if scaleInCooldownCopy0 > math.MaxInt32 || scaleInCooldownCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field ScaleInCooldown is of type int32")
+			}
+			scaleInCooldownCopy := int32(scaleInCooldownCopy0)
+			f6.ScaleInCooldown = &scaleInCooldownCopy
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown != nil {
-			f6.SetScaleOutCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown)
+			scaleOutCooldownCopy0 := *r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown
+			if scaleOutCooldownCopy0 > math.MaxInt32 || scaleOutCooldownCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field ScaleOutCooldown is of type int32")
+			}
+			scaleOutCooldownCopy := int32(scaleOutCooldownCopy0)
+			f6.ScaleOutCooldown = &scaleOutCooldownCopy
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue != nil {
-			f6.SetTargetValue(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue)
+			f6.TargetValue = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue
 		}
-		res.SetTargetTrackingScalingPolicyConfiguration(f6)
+		res.TargetTrackingScalingPolicyConfiguration = f6
 	}
 
 	return res, nil
@@ -468,7 +502,7 @@ func (rm *resourceManager) sdkUpdate(
 
 	var resp *svcsdk.PutScalingPolicyOutput
 	_ = resp
-	resp, err = rm.sdkapi.PutScalingPolicyWithContext(ctx, input)
+	resp, err = rm.sdkapi.PutScalingPolicy(ctx, input)
 	rm.metrics.RecordAPICall("UPDATE", "PutScalingPolicy", err)
 	if err != nil {
 		return nil, err
@@ -516,108 +550,133 @@ func (rm *resourceManager) newUpdateRequestPayload(
 	res := &svcsdk.PutScalingPolicyInput{}
 
 	if r.ko.Spec.PolicyName != nil {
-		res.SetPolicyName(*r.ko.Spec.PolicyName)
+		res.PolicyName = r.ko.Spec.PolicyName
 	}
 	if r.ko.Spec.PolicyType != nil {
-		res.SetPolicyType(*r.ko.Spec.PolicyType)
+		res.PolicyType = svcsdktypes.PolicyType(*r.ko.Spec.PolicyType)
 	}
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 	if r.ko.Spec.StepScalingPolicyConfiguration != nil {
-		f5 := &svcsdk.StepScalingPolicyConfiguration{}
+		f5 := &svcsdktypes.StepScalingPolicyConfiguration{}
 		if r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType != nil {
-			f5.SetAdjustmentType(*r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType)
+			f5.AdjustmentType = svcsdktypes.AdjustmentType(*r.ko.Spec.StepScalingPolicyConfiguration.AdjustmentType)
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.Cooldown != nil {
-			f5.SetCooldown(*r.ko.Spec.StepScalingPolicyConfiguration.Cooldown)
+			cooldownCopy0 := *r.ko.Spec.StepScalingPolicyConfiguration.Cooldown
+			if cooldownCopy0 > math.MaxInt32 || cooldownCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field Cooldown is of type int32")
+			}
+			cooldownCopy := int32(cooldownCopy0)
+			f5.Cooldown = &cooldownCopy
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType != nil {
-			f5.SetMetricAggregationType(*r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType)
+			f5.MetricAggregationType = svcsdktypes.MetricAggregationType(*r.ko.Spec.StepScalingPolicyConfiguration.MetricAggregationType)
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude != nil {
-			f5.SetMinAdjustmentMagnitude(*r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude)
+			minAdjustmentMagnitudeCopy0 := *r.ko.Spec.StepScalingPolicyConfiguration.MinAdjustmentMagnitude
+			if minAdjustmentMagnitudeCopy0 > math.MaxInt32 || minAdjustmentMagnitudeCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field MinAdjustmentMagnitude is of type int32")
+			}
+			minAdjustmentMagnitudeCopy := int32(minAdjustmentMagnitudeCopy0)
+			f5.MinAdjustmentMagnitude = &minAdjustmentMagnitudeCopy
 		}
 		if r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments != nil {
-			f5f4 := []*svcsdk.StepAdjustment{}
+			f5f4 := []svcsdktypes.StepAdjustment{}
 			for _, f5f4iter := range r.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments {
-				f5f4elem := &svcsdk.StepAdjustment{}
+				f5f4elem := &svcsdktypes.StepAdjustment{}
 				if f5f4iter.MetricIntervalLowerBound != nil {
-					f5f4elem.SetMetricIntervalLowerBound(*f5f4iter.MetricIntervalLowerBound)
+					f5f4elem.MetricIntervalLowerBound = f5f4iter.MetricIntervalLowerBound
 				}
 				if f5f4iter.MetricIntervalUpperBound != nil {
-					f5f4elem.SetMetricIntervalUpperBound(*f5f4iter.MetricIntervalUpperBound)
+					f5f4elem.MetricIntervalUpperBound = f5f4iter.MetricIntervalUpperBound
 				}
 				if f5f4iter.ScalingAdjustment != nil {
-					f5f4elem.SetScalingAdjustment(*f5f4iter.ScalingAdjustment)
+					scalingAdjustmentCopy0 := *f5f4iter.ScalingAdjustment
+					if scalingAdjustmentCopy0 > math.MaxInt32 || scalingAdjustmentCopy0 < math.MinInt32 {
+						return nil, fmt.Errorf("error: field ScalingAdjustment is of type int32")
+					}
+					scalingAdjustmentCopy := int32(scalingAdjustmentCopy0)
+					f5f4elem.ScalingAdjustment = &scalingAdjustmentCopy
 				}
-				f5f4 = append(f5f4, f5f4elem)
+				f5f4 = append(f5f4, *f5f4elem)
 			}
-			f5.SetStepAdjustments(f5f4)
+			f5.StepAdjustments = f5f4
 		}
-		res.SetStepScalingPolicyConfiguration(f5)
+		res.StepScalingPolicyConfiguration = f5
 	}
 	if r.ko.Spec.TargetTrackingScalingPolicyConfiguration != nil {
-		f6 := &svcsdk.TargetTrackingScalingPolicyConfiguration{}
+		f6 := &svcsdktypes.TargetTrackingScalingPolicyConfiguration{}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification != nil {
-			f6f0 := &svcsdk.CustomizedMetricSpecification{}
+			f6f0 := &svcsdktypes.CustomizedMetricSpecification{}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions != nil {
-				f6f0f0 := []*svcsdk.MetricDimension{}
+				f6f0f0 := []svcsdktypes.MetricDimension{}
 				for _, f6f0f0iter := range r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions {
-					f6f0f0elem := &svcsdk.MetricDimension{}
+					f6f0f0elem := &svcsdktypes.MetricDimension{}
 					if f6f0f0iter.Name != nil {
-						f6f0f0elem.SetName(*f6f0f0iter.Name)
+						f6f0f0elem.Name = f6f0f0iter.Name
 					}
 					if f6f0f0iter.Value != nil {
-						f6f0f0elem.SetValue(*f6f0f0iter.Value)
+						f6f0f0elem.Value = f6f0f0iter.Value
 					}
-					f6f0f0 = append(f6f0f0, f6f0f0elem)
+					f6f0f0 = append(f6f0f0, *f6f0f0elem)
 				}
-				f6f0.SetDimensions(f6f0f0)
+				f6f0.Dimensions = f6f0f0
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName != nil {
-				f6f0.SetMetricName(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName)
+				f6f0.MetricName = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.MetricName
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace != nil {
-				f6f0.SetNamespace(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace)
+				f6f0.Namespace = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Namespace
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic != nil {
-				f6f0.SetStatistic(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic)
+				f6f0.Statistic = svcsdktypes.MetricStatistic(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Statistic)
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit != nil {
-				f6f0.SetUnit(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit)
+				f6f0.Unit = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Unit
 			}
-			f6.SetCustomizedMetricSpecification(f6f0)
+			f6.CustomizedMetricSpecification = f6f0
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn != nil {
-			f6.SetDisableScaleIn(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn)
+			f6.DisableScaleIn = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.DisableScaleIn
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification != nil {
-			f6f2 := &svcsdk.PredefinedMetricSpecification{}
+			f6f2 := &svcsdktypes.PredefinedMetricSpecification{}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType != nil {
-				f6f2.SetPredefinedMetricType(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType)
+				f6f2.PredefinedMetricType = svcsdktypes.MetricType(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.PredefinedMetricType)
 			}
 			if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel != nil {
-				f6f2.SetResourceLabel(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel)
+				f6f2.ResourceLabel = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.PredefinedMetricSpecification.ResourceLabel
 			}
-			f6.SetPredefinedMetricSpecification(f6f2)
+			f6.PredefinedMetricSpecification = f6f2
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown != nil {
-			f6.SetScaleInCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown)
+			scaleInCooldownCopy0 := *r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleInCooldown
+			if scaleInCooldownCopy0 > math.MaxInt32 || scaleInCooldownCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field ScaleInCooldown is of type int32")
+			}
+			scaleInCooldownCopy := int32(scaleInCooldownCopy0)
+			f6.ScaleInCooldown = &scaleInCooldownCopy
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown != nil {
-			f6.SetScaleOutCooldown(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown)
+			scaleOutCooldownCopy0 := *r.ko.Spec.TargetTrackingScalingPolicyConfiguration.ScaleOutCooldown
+			if scaleOutCooldownCopy0 > math.MaxInt32 || scaleOutCooldownCopy0 < math.MinInt32 {
+				return nil, fmt.Errorf("error: field ScaleOutCooldown is of type int32")
+			}
+			scaleOutCooldownCopy := int32(scaleOutCooldownCopy0)
+			f6.ScaleOutCooldown = &scaleOutCooldownCopy
 		}
 		if r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue != nil {
-			f6.SetTargetValue(*r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue)
+			f6.TargetValue = r.ko.Spec.TargetTrackingScalingPolicyConfiguration.TargetValue
 		}
-		res.SetTargetTrackingScalingPolicyConfiguration(f6)
+		res.TargetTrackingScalingPolicyConfiguration = f6
 	}
 
 	return res, nil
@@ -639,7 +698,7 @@ func (rm *resourceManager) sdkDelete(
 	}
 	var resp *svcsdk.DeleteScalingPolicyOutput
 	_ = resp
-	resp, err = rm.sdkapi.DeleteScalingPolicyWithContext(ctx, input)
+	resp, err = rm.sdkapi.DeleteScalingPolicy(ctx, input)
 	rm.metrics.RecordAPICall("DELETE", "DeleteScalingPolicy", err)
 	return nil, err
 }
@@ -652,16 +711,16 @@ func (rm *resourceManager) newDeleteRequestPayload(
 	res := &svcsdk.DeleteScalingPolicyInput{}
 
 	if r.ko.Spec.PolicyName != nil {
-		res.SetPolicyName(*r.ko.Spec.PolicyName)
+		res.PolicyName = r.ko.Spec.PolicyName
 	}
 	if r.ko.Spec.ResourceID != nil {
-		res.SetResourceId(*r.ko.Spec.ResourceID)
+		res.ResourceId = r.ko.Spec.ResourceID
 	}
 	if r.ko.Spec.ScalableDimension != nil {
-		res.SetScalableDimension(*r.ko.Spec.ScalableDimension)
+		res.ScalableDimension = svcsdktypes.ScalableDimension(*r.ko.Spec.ScalableDimension)
 	}
 	if r.ko.Spec.ServiceNamespace != nil {
-		res.SetServiceNamespace(*r.ko.Spec.ServiceNamespace)
+		res.ServiceNamespace = svcsdktypes.ServiceNamespace(*r.ko.Spec.ServiceNamespace)
 	}
 
 	return res, nil
