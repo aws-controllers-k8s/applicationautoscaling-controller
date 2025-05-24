@@ -138,6 +138,7 @@ type ScalableTargetSpec struct {
 	//   - Pool of WorkSpaces - The resource type is workspacespool and the unique
 	//     identifier is the pool ID. Example: workspacespool/wspool-123456.
 	//
+	// Regex Pattern: `^[\u0020-\uD7FF\uE000-\uFFFD\uD800\uDC00-\uDBFF\uDFFF\r\n\t]*$`
 	// +kubebuilder:validation:Required
 	ResourceID *string `json:"resourceID"`
 	// This parameter is required for services that do not support service-linked
@@ -147,6 +148,8 @@ type ScalableTargetSpec struct {
 	// If the service supports service-linked roles, Application Auto Scaling uses
 	// a service-linked role, which it creates if it does not yet exist. For more
 	// information, see How Application Auto Scaling works with IAM (https://docs.aws.amazon.com/autoscaling/application/userguide/security_iam_service-with-iam.html).
+	//
+	// Regex Pattern: `^[\u0020-\uD7FF\uE000-\uFFFD\uD800\uDC00-\uDBFF\uDFFF\r\n\t]*$`
 	RoleARN *string `json:"roleARN,omitempty"`
 	// The scalable dimension associated with the scalable target. This string consists
 	// of the service namespace, resource type, and scaling property.

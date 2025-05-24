@@ -35,6 +35,8 @@ type ScalingPolicySpec struct {
 	// You cannot change the name of a scaling policy, but you can delete the original
 	// scaling policy and create a new scaling policy with the same settings and
 	// a different name.
+	//
+	// Regex Pattern: `^\p{Print}+$`
 	// +kubebuilder:validation:Required
 	PolicyName *string `json:"policyName"`
 	// The scaling policy type. This parameter is required if you are creating a
@@ -115,6 +117,7 @@ type ScalingPolicySpec struct {
 	//   - Pool of WorkSpaces - The resource type is workspacespool and the unique
 	//     identifier is the pool ID. Example: workspacespool/wspool-123456.
 	//
+	// Regex Pattern: `^[\u0020-\uD7FF\uE000-\uFFFD\uD800\uDC00-\uDBFF\uDFFF\r\n\t]*$`
 	// +kubebuilder:validation:Required
 	ResourceID *string `json:"resourceID"`
 	// The scalable dimension. This string consists of the service namespace, resource
