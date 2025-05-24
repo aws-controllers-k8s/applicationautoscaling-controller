@@ -54,6 +54,8 @@ spec:
                   You cannot change the name of a scaling policy, but you can delete the original
                   scaling policy and create a new scaling policy with the same settings and
                   a different name.
+
+                  Regex Pattern: `^\p{Print}+$`
                 type: string
               policyType:
                 description: |-
@@ -136,6 +138,8 @@ spec:
 
                     - Pool of WorkSpaces - The resource type is workspacespool and the unique
                       identifier is the pool ID. Example: workspacespool/wspool-123456.
+
+                  Regex Pattern: `^[\u0020-\uD7FF\uE000-\uFFFD\uD800\uDC00-\uDBFF\uDFFF\r\n\t]*$`
                 type: string
               scalableDimension:
                 description: |-
