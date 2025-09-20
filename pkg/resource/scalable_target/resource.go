@@ -107,19 +107,20 @@ func (r *resource) SetIdentifiers(identifier *ackv1alpha1.AWSIdentifiers) error 
 
 // PopulateResourceFromAnnotation populates the fields passed from adoption annotation
 func (r *resource) PopulateResourceFromAnnotation(fields map[string]string) error {
-	tmp, ok := fields["resourceID"]
+	primaryKey, ok := fields["resourceID"]
 	if !ok {
 		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: resourceID"))
 	}
-	r.ko.Spec.ResourceID = &tmp
+	r.ko.Spec.ResourceID = &primaryKey
+	f4, ok := fields["serviceNamespace"]
+	if !ok {
+		return ackerrors.NewTerminalError(fmt.Errorf("required field missing: serviceNamespace"))
+	}
+	r.ko.Spec.ServiceNamespace = &f4
 
 	f3, f3ok := fields["scalableDimension"]
 	if f3ok {
 		r.ko.Spec.ScalableDimension = aws.String(f3)
-	}
-	f4, f4ok := fields["serviceNamespace"]
-	if f4ok {
-		r.ko.Spec.ServiceNamespace = aws.String(f4)
 	}
 
 	return nil
