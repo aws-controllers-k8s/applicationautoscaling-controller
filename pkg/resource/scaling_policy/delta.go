@@ -17,16 +17,15 @@ package scaling_policy
 
 import (
 	"bytes"
-	"reflect"
 
 	ackcompare "github.com/aws-controllers-k8s/runtime/pkg/compare"
 	acktags "github.com/aws-controllers-k8s/runtime/pkg/tags"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 // Hack to avoid import errors during build...
 var (
 	_ = &bytes.Buffer{}
-	_ = &reflect.Method{}
 	_ = &acktags.Tags{}
 )
 
@@ -112,7 +111,7 @@ func newResourceDelta(
 		if len(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) != len(b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
 			delta.Add("Spec.StepScalingPolicyConfiguration.StepAdjustments", a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments)
 		} else if len(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) > 0 {
-			if !reflect.DeepEqual(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
+			if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments) {
 				delta.Add("Spec.StepScalingPolicyConfiguration.StepAdjustments", a.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments, b.ko.Spec.StepScalingPolicyConfiguration.StepAdjustments)
 			}
 		}
@@ -126,7 +125,7 @@ func newResourceDelta(
 			if len(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) != len(b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
 				delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions)
 			} else if len(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) > 0 {
-				if !reflect.DeepEqual(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
+				if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions) {
 					delta.Add("Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions", a.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions, b.ko.Spec.TargetTrackingScalingPolicyConfiguration.CustomizedMetricSpecification.Dimensions)
 				}
 			}
