@@ -92,6 +92,14 @@ rules:
   - patch
   - update
 - apiGroups:
+  - iam.services.k8s.aws
+  resources:
+  - roles
+  - roles/status
+  verbs:
+  - get
+  - list
+- apiGroups:
   - services.k8s.aws
   resources:
   - fieldexports

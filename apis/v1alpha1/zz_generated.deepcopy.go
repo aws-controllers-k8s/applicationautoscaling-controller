@@ -635,6 +635,11 @@ func (in *ScalableTargetSpec) DeepCopyInto(out *ScalableTargetSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RoleRef != nil {
+		in, out := &in.RoleRef, &out.RoleRef
+		*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ScalableDimension != nil {
 		in, out := &in.ScalableDimension, &out.ScalableDimension
 		*out = new(string)

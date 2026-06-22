@@ -185,7 +185,8 @@ type PredictiveScalingMetricStat struct {
 	Unit   *string                  `json:"unit,omitempty"`
 }
 
-// Represents a predictive scaling policy configuration.
+// Represents a predictive scaling policy configuration. Predictive scaling
+// is supported on Amazon ECS services.
 type PredictiveScalingPolicyConfiguration struct {
 	MaxCapacityBreachBehavior *string                                 `json:"maxCapacityBreachBehavior,omitempty"`
 	MaxCapacityBuffer         *int64                                  `json:"maxCapacityBuffer,omitempty"`
@@ -268,7 +269,8 @@ type ScalingPolicy_SDK struct {
 	PolicyARN    *string      `json:"policyARN,omitempty"`
 	PolicyName   *string      `json:"policyName,omitempty"`
 	PolicyType   *string      `json:"policyType,omitempty"`
-	// Represents a predictive scaling policy configuration.
+	// Represents a predictive scaling policy configuration. Predictive scaling
+	// is supported on Amazon ECS services.
 	PredictiveScalingPolicyConfiguration *PredictiveScalingPolicyConfiguration `json:"predictiveScalingPolicyConfiguration,omitempty"`
 	ResourceID                           *string                               `json:"resourceID,omitempty"`
 	ScalableDimension                    *string                               `json:"scalableDimension,omitempty"`

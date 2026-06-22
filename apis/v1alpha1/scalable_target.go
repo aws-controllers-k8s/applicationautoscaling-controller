@@ -150,7 +150,8 @@ type ScalableTargetSpec struct {
 	// information, see How Application Auto Scaling works with IAM (https://docs.aws.amazon.com/autoscaling/application/userguide/security_iam_service-with-iam.html).
 	//
 	// Regex Pattern: `^[\u0020-\uD7FF\uE000-\uFFFD\uD800\uDC00-\uDBFF\uDFFF\r\n\t]*$`
-	RoleARN *string `json:"roleARN,omitempty"`
+	RoleARN *string                                  `json:"roleARN,omitempty"`
+	RoleRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"roleRef,omitempty"`
 	// The scalable dimension associated with the scalable target. This string consists
 	// of the service namespace, resource type, and scaling property.
 	//
