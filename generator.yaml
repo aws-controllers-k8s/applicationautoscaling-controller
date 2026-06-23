@@ -46,6 +46,10 @@ resources:
       RoleARN:
         late_initialize:
           min_backoff_seconds: 5
+        references:
+          service_name: iam
+          resource: Role
+          path: Status.ACKResourceMetadata.ARN
     tags:
       ignore: true
   ScalingPolicy:

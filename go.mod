@@ -3,6 +3,7 @@ module github.com/aws-controllers-k8s/applicationautoscaling-controller
 go 1.25.0
 
 require (
+	github.com/aws-controllers-k8s/iam-controller v1.7.2
 	github.com/aws-controllers-k8s/runtime v0.60.0
 	github.com/aws/aws-sdk-go v1.49.0
 	github.com/aws/aws-sdk-go-v2 v1.35.0
