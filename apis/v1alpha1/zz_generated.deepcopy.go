@@ -910,6 +910,11 @@ func (in *ScalingPolicySpec) DeepCopyInto(out *ScalingPolicySpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ResourceRef != nil {
+		in, out := &in.ResourceRef, &out.ResourceRef
+		*out = new(corev1alpha1.AWSResourceReferenceWrapper)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ScalableDimension != nil {
 		in, out := &in.ScalableDimension, &out.ScalableDimension
 		*out = new(string)

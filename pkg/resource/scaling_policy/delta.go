@@ -63,6 +63,9 @@ func newResourceDelta(
 			delta.Add("Spec.ResourceID", a.ko.Spec.ResourceID, b.ko.Spec.ResourceID)
 		}
 	}
+	if !equality.Semantic.Equalities.DeepEqual(a.ko.Spec.ResourceRef, b.ko.Spec.ResourceRef) {
+		delta.Add("Spec.ResourceRef", a.ko.Spec.ResourceRef, b.ko.Spec.ResourceRef)
+	}
 	if ackcompare.HasNilDifference(a.ko.Spec.ScalableDimension, b.ko.Spec.ScalableDimension) {
 		delta.Add("Spec.ScalableDimension", a.ko.Spec.ScalableDimension, b.ko.Spec.ScalableDimension)
 	} else if a.ko.Spec.ScalableDimension != nil && b.ko.Spec.ScalableDimension != nil {

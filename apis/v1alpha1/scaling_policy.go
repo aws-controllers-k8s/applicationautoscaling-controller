@@ -118,8 +118,8 @@ type ScalingPolicySpec struct {
 	//     identifier is the pool ID. Example: workspacespool/wspool-123456.
 	//
 	// Regex Pattern: `^[\u0020-\uD7FF\uE000-\uFFFD\uD800\uDC00-\uDBFF\uDFFF\r\n\t]*$`
-	// +kubebuilder:validation:Required
-	ResourceID *string `json:"resourceID"`
+	ResourceID  *string                                  `json:"resourceID,omitempty"`
+	ResourceRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"resourceRef,omitempty"`
 	// The scalable dimension. This string consists of the service namespace, resource
 	// type, and scaling property.
 	//

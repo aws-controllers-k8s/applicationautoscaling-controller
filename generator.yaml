@@ -67,6 +67,9 @@ resources:
     fields:
       ResourceID:
         is_primary_key: true
+        references:
+          resource: ScalableTarget
+          path: Spec.ResourceID
       PolicyARN:
         is_arn: true
       CreationTime:
